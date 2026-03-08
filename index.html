@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PONETE FIT | Entrenador Personal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+         :root {
+            --naranja: #FF4500;
+            --azul-bt: #2980b9;
+            --verde: #27ae60;
+            --fondo: #0f172a;
+            --tarjeta: #1e293b;
+            --texto: #f8fafc;
+        }
+        
+        * {
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--fondo);
+            color: var(--texto);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        /* Encabezado Estilo App */
+        
+        header {
+            width: 100%;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            text-align: center;
+            border-bottom: 2px solid var(--naranja);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-weight: 900;
+            font-size: 2.5rem;
+            margin: 0;
+            color: var(--naranja);
+            letter-spacing: -1px;
+        }
+        
+        header p {
+            opacity: 0.7;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .container {
+            width: 95%;
+            max-width: 600px;
+            padding-bottom: 50px;
+        }
+        /* Buscador Responsive */
+        
+        .search-box {
+            background: var(--tarjeta);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #334155;
+            background: #0f172a;
+            color: white;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        input:focus {
+            border-color: var(--naranja);
+            outline: none;
+        }
+        
+        .btn-principal {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: none;
+            background: var(--naranja);
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        
+        .btn-principal:active {
+            transform: scale(0.98);
+        }
+        /* Estilo de Secciones y Tarjetas (como en tu PC) */
+        
+        h2 {
+            color: var(--azul-bt);
+            border-left: 4px solid var(--azul-bt);
+            padding-left: 10px;
+            margin-top: 30px;
+        }
+        
+        .tabata-title {
+            color: var(--verde);
+            border-left: 4px solid var(--verde);
+        }
+        
+        .card {
+            background: var(--tarjeta);
+            margin: 12px 0;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #334155;
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .card-info b {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+        
+        .card-info span {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .reps-highlight {
+            color: #f1c40f;
+        }
+        
+        .btn-video {
+            background: #c0392b;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .config-pill {
+            background: #334155;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        /* Mobile First adjustments */
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .card {
+                padding: 12px;
+            }
+            .btn-video {
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>PONETE FIT</h1>
+        <p>MANAGER DE ENTRENAMIENTO</p>
+    </header>
+
+    <div class="container">
+        <div class="search-box">
+            <input type="text" id="codigoInput" placeholder="Ingresa tu código aquí...">
+            <button class="btn-principal" onclick="buscarRutina()">Ver mi Rutina</button>
+        </div>
+
+        <div id="resultado">
+        </div>
+    </div>
+
+    <script>
+        async function buscarRutina() {
+            const codigo = document.getElementById('codigoInput').value.trim().toLowerCase();
+            const res = document.getElementById('resultado');
+
+            if (!codigo) return;
+
+            res.innerHTML = "<p style='text-align:center'>Cargando rutina...</p>";
+
+            try {
+                const response = await fetch(`https://ponetefit-app-default-rtdb.firebaseio.com/rutinas/${codigo}.json`);
+                const data = await response.json();
+
+                if (!data) {
+                    res.innerHTML = "<p style='text-align:center; color:#e74c3c'>❌ El código no existe</p>";
+                    return;
+                }
+
+                let html = "";
+
+                // 1. CALENTAMIENTO
+                html += `<h2>🔥 CALENTAMIENTO</h2>`;
+                html += `<div class="config-pill">Realizar <b>${data.warmup_vueltas} vueltas</b> de los siguientes ejercicios:</div>`;
+
+                data.warmup_ejercicios.forEach(ej => {
+                    html += crearTarjeta(ej[0], ej[1], ej[2]);
+                });
+
+                // 2. RUTINA PRINCIPAL
+                if (data.tipo === "Circuito") {
+                    html += `<h2 class="tabata-title">🔄 CIRCUITO PRINCIPAL</h2>`;
+                    html += `<div class="config-pill">Realizar cada bloque <b>${data.vueltas_bloque} veces</b> totales.</div>`;
+
+                    data.rutina.forEach(bloque => {
+                        html += `<h4 style="margin-top:25px; color:#94a3b8">BLOQUE #${bloque.id}</h4>`;
+                        bloque.ejercicios.forEach(ej => {
+                            html += crearTarjeta(ej.nombre, ej.link, ej.reps);
+                        });
+                    });
+                } else {
+                    html += `<h2 class="tabata-title">⏱️ MODO TABATA</h2>`;
+                    html += `<div class="config-pill">
+                    <b>Trabajo:</b> ${data.config.trabajo}s | 
+                    <b>Descanso:</b> ${data.config.pausa}s | 
+                    <b>Rondas:</b> ${data.config.rondas}
+                </div>`;
+
+                    data.rutina.forEach((ej, index) => {
+                        html += crearTarjeta(`${index+1}. ${ej[0]}`, ej[1], "Tiempo Tabata");
+                    });
+                }
+
+                res.innerHTML = html;
+
+            } catch (e) {
+                res.innerHTML = "<p>Error de conexión.</p>";
+            }
+        }
+
+        function crearTarjeta(nombre, link, reps) {
+            return `
+            <div class="card">
+                <div class="card-info">
+                    <b>${nombre}</b>
+                    <span class="${reps !== 'Tiempo Tabata' ? 'reps-highlight' : ''}">${reps} ${reps !== 'Tiempo Tabata' ? 'REPS' : ''}</span>
+                </div>
+                <a href="${link}" target="_blank" class="btn-video">📺 VIDEO</a>
+            </div>
+        `;
+        }
+    </script>
+
+</body>
+
+</html>
