@@ -4,22 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PONETE FIT | Full Training</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>PONETE FIT | Full Training Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&family=Impact&display=swap" rel="stylesheet">
     <style>
          :root {
             --naranja: #FF4500;
-            --azul: #2980b9;
-            --verde: #27ae60;
-            --rojo: #c0392b;
+            --azul: #3498db;
+            --verde: #2ecc71;
+            --rojo: #e74c3c;
+            --amarillo: #f1c40f;
+            --purpura: #9b59b6;
             --fondo: #0f172a;
             --tarjeta: #1e293b;
             --texto: #f8fafc;
+            --borde: #334155;
         }
         
         * {
             box-sizing: border-box;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
         
         body {
@@ -30,7 +33,10 @@
             padding: 0;
             overflow-x: hidden;
         }
-        /* PANTALLA DE INICIO */
+        
+        .font-impact {
+            font-family: 'Impact', sans-serif;
+        }
         
         .home-screen {
             height: 100vh;
@@ -39,43 +45,45 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            text-align: center;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
         }
         
         .search-box {
             background: var(--tarjeta);
             padding: 30px;
-            border-radius: 20px;
+            border-radius: 24px;
             width: 100%;
-            max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 450px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--borde);
+            text-align: center;
         }
         
         input {
             width: 100%;
-            padding: 15px;
-            border-radius: 10px;
-            border: 2px solid #334155;
+            padding: 18px;
+            border-radius: 12px;
+            border: 2px solid var(--borde);
             background: #0f172a;
             color: white;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
         }
         
         .btn-principal {
             width: 100%;
-            padding: 15px;
-            border-radius: 10px;
+            padding: 18px;
+            border-radius: 12px;
             border: none;
             background: var(--naranja);
             color: white;
-            font-weight: bold;
+            font-weight: 900;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 1.1rem;
             text-transform: uppercase;
         }
-        /* VENTANA DE RUTINA (MODAL) */
         
         #rutina-modal {
             display: none;
@@ -87,344 +95,1918 @@
             background: var(--fondo);
             z-index: 100;
             overflow-y: auto;
-            padding: 20px;
-            animation: slideUp 0.3s ease-out;
-        }
-        
-        @keyframes slideUp {
-            from {
-                transform: translateY(100%);
-            }
-            to {
-                transform: translateY(0);
-            }
+            padding-bottom: 80px;
         }
         
         .header-rutina {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--naranja);
-            padding-bottom: 10px;
+            padding: 15px 20px;
+            background: #1a2537;
+            border-bottom: 3px solid var(--naranja);
             position: sticky;
             top: 0;
-            background: var(--fondo);
-            z-index: 10;
+            z-index: 1000;
         }
         
-        .btn-cerrar {
+        .btn-header {
             background: #475569;
             color: white;
             border: none;
-            padding: 10px 18px;
+            padding: 10px 15px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
         }
-        /* SECCIONES Y CARDS */
         
-        h2 {
-            color: var(--azul);
-            font-size: 1.4rem;
-            margin-top: 30px;
-            border-left: 5px solid var(--azul);
-            padding-left: 12px;
+        .container-scroll {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
         }
         
-        .bloque-titulo {
-            color: #94a3b8;
-            font-size: 1.1rem;
-            margin: 25px 0 10px 5px;
+        .seccion-card {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid var(--borde);
+        }
+        
+        .seccion-titulo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-bottom: 15px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            display: block;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 5px;
         }
         
-        .card {
-            background: var(--tarjeta);
-            margin: 10px 0;
-            padding: 16px;
-            border-radius: 14px;
+        .card-ejercicio {
+            background: #111827;
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border: 1px solid #334155;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #374151;
         }
         
-        .card-info b {
-            display: block;
-            font-size: 1.1rem;
-            color: #fff;
-            margin-bottom: 4px;
-        }
-        
-        .card-info span {
-            color: #f1c40f;
-            font-size: 0.9rem;
-            font-weight: 900;
-        }
-        
-        .btn-video {
+        .btn-youtube {
             background: var(--rojo);
             color: white;
             text-decoration: none;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 0.85rem;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.8rem;
             font-weight: 900;
         }
         
-        .config-pill {
-            background: #1e293b;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            border: 1px dashed #475569;
-            line-height: 1.4;
-        }
-        /* TIMER AL FINAL */
-        
-        #timer-container {
+        #timer-box {
             background: var(--tarjeta);
-            border-radius: 20px;
-            padding: 30px;
+            border-radius: 30px;
+            padding: 40px 20px;
             text-align: center;
-            margin: 50px 0 80px 0;
-            border: 4px solid var(--verde);
-            box-shadow: 0 0 25px rgba(39, 174, 96, 0.2);
+            border: 5px solid var(--verde);
+            margin-top: 20px;
         }
         
-        #timer-status {
-            font-size: 1.6rem;
-            font-weight: 900;
-        }
-        
-        #timer-clock {
-            font-size: 6.5rem;
-            font-family: 'Courier New', monospace;
-            font-weight: 900;
+        #clock {
+            font-size: 7rem;
+            font-family: 'Impact';
+            color: var(--verde);
             margin: 10px 0;
         }
         
-        #timer-ejercicio {
-            font-size: 1.3rem;
-            color: var(--naranja);
-            font-weight: bold;
-            min-height: 1.5em;
+        .serie-card {
+            background: #1e293b;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid var(--borde);
         }
         
-        .btn-timer {
-            width: 100%;
-            padding: 20px;
-            border-radius: 15px;
+        .serie-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+        
+        .timer-display {
+            font-size: 4rem;
+            font-family: 'Impact';
+            color: var(--verde);
+            display: none;
+            margin: 10px 0;
+        }
+        
+        .btn-rest {
+            background: #e67e22;
+            color: white;
             border: none;
+            padding: 15px;
+            border-radius: 10px;
             font-weight: 900;
             cursor: pointer;
+            width: 100%;
+            text-transform: uppercase;
+        }
+        
+        .btn-rest.active {
+            background: #7f8c8d;
+        }
+        
+        #overlay-descanso,
+        #overlay-pausa-ronda {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.98);
+            z-index: 3000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .emom-box {
+            background: #1a2537;
+            border: 3px solid var(--amarillo);
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
             margin-top: 20px;
+        }
+        
+        .emom-clock {
+            font-size: 6rem;
+            font-family: 'Impact';
+            color: var(--amarillo);
+        }
+        
+        .mix-seccion {
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 24px;
+            border: 2px solid var(--borde);
+            background: #111827;
+        }
+        
+        .mix-seccion-titulo {
             font-size: 1.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
             background: var(--verde);
             color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: none;
+            z-index: 4000;
+        }
+        
+        .warmup-box {
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 24px;
+        }
+        
+        .bloque-mix {
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 24px;
+            border: 2px solid var(--borde);
+            background: #0f172a;
+        }
+        
+        .bloque-mix-titulo {
+            font-size: 1.1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        
+        .btn-pausa {
+            background: #8e44ad;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 900;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            margin-top: 8px;
+            width: 100%;
+        }
+        
+        .btn-pausa:disabled {
+            background: #4a3558;
+            cursor: not-allowed;
         }
     </style>
 </head>
 
 <body>
 
+    <div id="toast">Rutina sincronizada</div>
+
+    <!-- Overlay descanso circuito -->
+    <div id="overlay-descanso">
+        <h1 class="font-impact" style="color:var(--purpura); font-size:3rem;">DESCANSO DE VUELTA</h1>
+        <div id="descanso-clock" style="font-size:10rem; font-family:'Impact'; color:white;">60</div>
+        <button class="btn-header" onclick="cerrarDescansoCircuito()">SALTAR DESCANSO</button>
+    </div>
+
+    <!-- Overlay pausa entre rondas Tabata -->
+    <div id="overlay-pausa-ronda">
+        <h1 class="font-impact" style="color:var(--purpura); font-size:2.5rem;">PAUSA ENTRE RONDAS</h1>
+        <div id="pausa-ronda-clock" style="font-size:10rem; font-family:'Impact'; color:white;">30</div>
+        <div id="pausa-ronda-info" style="font-size:1.3rem; color:var(--amarillo); margin-top:10px;"></div>
+        <button class="btn-header" style="margin-top:20px;" onclick="salterPausaRonda()">SALTAR PAUSA</button>
+    </div>
+
+    <!-- Home -->
     <div class="home-screen" id="view-home">
-        <h1 style="color: var(--naranja); font-size: 3.5rem; margin: 0;">PONETE FIT</h1>
-        <h1 style="color: var(--yellow); font-size: 3.5rem; margin: 0;">EN CASA</h1>
+        <h1 class="font-impact" style="color:var(--naranja); font-size:5rem; margin:0;">PONETE FIT</h1>
+        <h2 class="font-impact" style="color:white; font-size:2.5rem; margin-bottom:30px;">PRO COACH</h2>
         <div class="search-box">
-            <input type="text" id="codigoInput" placeholder="INGRESA TU CÓDIGO">
-            <button class="btn-principal" onclick="buscarRutina()">VER MI RUTINA</button>
+            <input type="text" id="codigoInput" placeholder="CODIGO DE RUTINA">
+            <button class="btn-principal" onclick="consultarRutina()">ENTRAR A ENTRENAR</button>
         </div>
     </div>
 
+    <!-- Modal de rutina -->
     <div id="rutina-modal">
         <div class="header-rutina">
-            <h3 id="modal-titulo" style="margin:0; font-size: 1.5rem;">ENTRENAMIENTO</h3>
-            <button class="btn-cerrar" onclick="cerrarModal()">VOLVER</button>
+            <div>
+                <span id="tipo-tag" style="background:var(--naranja); padding:4px 8px; border-radius:4px; font-weight:900; font-size:0.7rem;">MODO</span>
+                <h3 id="id-display" style="margin:0;">---</h3>
+            </div>
+            <div>
+                <button class="btn-header" onclick="cerrar()">SALIR</button>
+            </div>
         </div>
 
-        <div id="contenido-rutina"></div>
+        <div class="container-scroll">
+            <div id="sec-warmup" class="seccion-card">
+                <div class="seccion-titulo" style="color:var(--azul);">CALENTAMIENTO</div>
+                <div id="warmup-meta" style="color:var(--amarillo); font-weight:bold; margin-bottom:15px;"></div>
+                <div id="warmup-lista"></div>
+                <div id="warmup-timer-box" style="display:none; text-align:center; margin-top:16px;">
+                    <div id="warmup-status" style="font-size:1.2rem; font-weight:900; color:var(--azul);"></div>
+                    <div id="warmup-ej" style="font-size:1rem; color:var(--naranja); min-height:1.2rem;"></div>
+                    <div id="warmup-clock" style="font-size:5rem; font-family:Impact; color:white;">--</div>
+                    <button class="btn-rest" id="warmup-btn" onclick="iniciarWarmupTimer()" style="max-width:280px; margin:0 auto; background:var(--azul);">INICIAR CALENTAMIENTO</button>
+                </div>
+            </div>
 
-        <div id="timer-container" style="display:none;">
-            <div id="timer-status">¿LISTO?</div>
-            <div id="timer-clock">05</div>
-            <div id="timer-ejercicio">Prepárate para arrancar</div>
-            <button class="btn-timer" id="btnPlay" onclick="iniciarConPreparacion()">▶ EMPEZAR TABATA</button>
+            <div id="sec-rutina-lista">
+                <div id="sec-principal">
+                    <div id="principal-titulo" class="seccion-titulo" style="color:var(--verde);">ENTRENAMIENTO</div>
+                    <div id="principal-lista"></div>
+                </div>
+            </div>
+
+            <!-- Timer para Tabata / Circuito por Tiempo -->
+            <div id="sec-timer-ui" style="display:none;">
+                <div style="margin-bottom:10px;">
+                    <button class="btn-header" onclick="salirDelTimer()" style="background:#d35400; color:white; font-size:1rem; padding:12px 20px; width:100%; border-radius:10px;">⬅ VOLVER A RUTINA MIX</button>
+                </div>
+                <div id="timer-box">
+                    <div id="t-status" style="font-size:1.8rem; font-weight:900;">LISTO?</div>
+                    <div id="t-ejercicio-nombre" style="font-size:1.4rem; color:var(--naranja); font-weight:bold; min-height:2rem;"></div>
+                    <div id="t-ej-restantes" style="font-size:0.95rem; color:var(--amarillo); margin-bottom:6px;"></div>
+                    <div id="clock">05</div>
+                    <div id="t-ejercicio" style="font-size:1.1rem; color:#94a3b8;">Preparate</div>
+                    <div id="next-ej-container" style="display:none; color:var(--amarillo); margin-top:10px;">
+                        PROXIMO: <span id="next-ej-name">---</span>
+                    </div>
+                    <button class="btn-principal" id="btnStartTimer" onclick="iniciarCronometroTiempo()" style="background:var(--verde); margin-top:20px;">EMPEZAR</button>
+                    <!-- PAUSA para Tabata / Circuito por Tiempo -->
+                    <button class="btn-pausa" id="btnPausaTimer" onclick="togglePausaTimer()" style="display:none; max-width:300px; margin:8px auto 0;">⏸ PAUSAR</button>
+                </div>
+            </div>
+
+            <!-- EMOM -->
+            <div id="sec-emom-ui" style="display:none;">
+                <div class="emom-box">
+                    <div id="emom-status" style="font-size:1.5rem; font-weight:900;">LISTO?</div>
+                    <div id="emom-minuto" style="font-size:1rem; color:var(--amarillo); margin:6px 0;"></div>
+                    <div class="emom-clock" id="emom-clock">60</div>
+                    <button class="btn-principal" id="btnStartEmom" onclick="iniciarEmom()" style="background:var(--amarillo); color:#000; margin-top:20px;">INICIAR EMOM</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        let rutinaActual = [];
-        let configTabata = {};
-        let timerInterval;
-        let tiempoRestante = 5;
-        let fase = "preparacion";
-        let indiceEjercicio = 0;
-        let rondaActual = 1;
+        let dataGlobal = null;
+        let restIntervals = {};
+        let seriesRestantes = {};
+        let tInterval = null,
+            dInterval = null,
+            emomInterval = null,
+            pausaRondaInterval = null;
+        let tSegs = 5,
+            tFase = "prep",
+            tIdx = 0,
+            tRonda = 1;
+        let tPausaRondaResolve = null;
+        let currentCode = "";
+        let bloqueTiempoIntervals = {};
+        let emomRunning = false,
+            emomMinActual = 0;
+        let warmupRunning = false,
+            warmupInterval = null;
 
-        const audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+        // Estado de pausa para el timer principal (Tabata / Circuito por Tiempo)
+        let timerPausado = false;
+        let timerActivo = false;
 
-        function playBeep(f) {
-            const o = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
+        const audio = new(window.AudioContext || window.webkitAudioContext)();
+
+        function beep(f) {
+            const o = audio.createOscillator(),
+                g = audio.createGain();
             o.connect(g);
-            g.connect(audioCtx.destination);
+            g.connect(audio.destination);
             o.frequency.value = f;
-            g.gain.value = 0.06;
+            g.gain.value = 0.1;
             o.start();
-            setTimeout(() => o.stop(), 150);
+            setTimeout(() => o.stop(), 200);
         }
 
-        async function buscarRutina() {
+        async function consultarRutina() {
             const cod = document.getElementById('codigoInput').value.trim().toLowerCase();
             if (!cod) return;
-
             try {
-                const response = await fetch(`https://ponetefit-app-default-rtdb.firebaseio.com/rutinas/${cod}.json`);
-                const data = await response.json();
-                if (!data) {
-                    alert("Código no encontrado");
+                const res = await fetch("https://ponetefit-app-default-rtdb.firebaseio.com/rutinas/" + cod + ".json");
+                const data = await res.json();
+                if (!data) return alert("Codigo no encontrado");
+                dataGlobal = data;
+                currentCode = cod;
+                document.getElementById('id-display').innerText = cod.toUpperCase();
+                document.getElementById('tipo-tag').innerText = data.tipo.toUpperCase();
+                render(data);
+                document.getElementById('rutina-modal').style.display = "block";
+            } catch (e) {
+                alert("Error al conectar con la base de datos");
+            }
+        }
+
+        function calcularPausa(reps) {
+            const r = parseInt(reps);
+            if (isNaN(r)) return 60;
+            if (r <= 2) return 120;
+            if (r <= 4) return 105;
+            if (r <= 6) return 90;
+            if (r <= 8) return 75;
+            if (r <= 10) return 60;
+            if (r <= 12) return 50;
+            return 45;
+        }
+
+        // ─── RENDER CALENTAMIENTO DINAMICO ───
+        function renderWarmup(data) {
+            const tipo = data.warmup_tipo || "Circuito (Vueltas)";
+            const ejsW = data.warmup_ejercicios || [];
+            const det = data.warmup_config_detalle || {};
+
+            const colorMap = {
+                "Circuito (Vueltas)": "var(--azul)",
+                "Circuito por Tiempo": "#1a8bc0",
+                "Tabata": "#d35400",
+                "EMOM": "var(--amarillo)",
+                "Series/Reps": "var(--verde)"
+            };
+            const color = colorMap[tipo] || "var(--azul)";
+
+            document.getElementById('warmup-meta').innerHTML =
+                '<span style="color:' + color + '; font-weight:900;">' + tipo.toUpperCase() + '</span>';
+
+            const wLista = document.getElementById('warmup-lista');
+            wLista.innerHTML = '';
+
+            if (ejsW.length === 0) {
+                document.getElementById('sec-warmup').style.display = "none";
+                return;
+            }
+            document.getElementById('sec-warmup').style.display = "block";
+
+            // Metadata segun tipo
+            let metaText = "";
+            if (tipo === "Circuito (Vueltas)") {
+                const vueltas = data.warmup_vueltas || det.vueltas || 2;
+                const pausaV = det.pausa_vuelta || 0;
+                metaText = vueltas + " VUELTAS" + (pausaV > 0 ? " | Pausa entre vueltas: " + pausaV + "s" : "");
+            } else if (tipo === "Circuito por Tiempo") {
+                metaText = (det.duracion_bloque || 3) + " MINUTOS";
+            } else if (tipo === "Tabata") {
+                metaText = (det.trabajo || 20) + "s TRABAJO / " + (det.pausa || 10) + "s DESCANSO";
+            } else if (tipo === "EMOM") {
+                metaText = (det.minutos || 5) + " MINUTOS EMOM";
+            } else if (tipo === "Series/Reps") {
+                metaText = (det.series || 3) + " SERIES × " + (det.reps || 10) + " REPS";
+            }
+
+            if (metaText) {
+                wLista.innerHTML += '<div style="color:var(--amarillo); font-weight:bold; margin-bottom:10px; font-size:0.95rem;">' + metaText + '</div>';
+            }
+
+            ejsW.forEach(function(ej) {
+                const n = Array.isArray(ej) ? ej[0] : (ej.nombre || ej.ejercicio);
+                const l = Array.isArray(ej) ? ej[1] : (ej.link || "");
+                const r = Array.isArray(ej) ? ej[2] : (ej.reps || "");
+                wLista.innerHTML += crearCard(n, l, r ? r + " REPS" : "");
+            });
+
+            // Timer interactivo segun tipo
+            const tBox = document.getElementById('warmup-timer-box');
+            const tStatus = document.getElementById('warmup-status');
+            const tEj = document.getElementById('warmup-ej');
+            const tClock = document.getElementById('warmup-clock');
+            const tBtn = document.getElementById('warmup-btn');
+
+            if (tipo === "Circuito (Vueltas)") {
+                const vueltas = data.warmup_vueltas || det.vueltas || 2;
+                const pausaV = det.pausa_vuelta || 0;
+                tBox.style.display = "block";
+                tStatus.innerText = "VUELTAS DEL CALENTAMIENTO";
+                tClock.style.display = "none";
+
+                // Contador de vueltas
+                let vRestantes = vueltas;
+                const vCounter = document.createElement('div');
+                vCounter.id = 'warmup-vueltas-counter';
+                vCounter.style.cssText = 'font-size:2rem; font-weight:900; color:var(--amarillo); margin:8px 0;';
+                vCounter.innerText = 'Vueltas restantes: ' + vRestantes;
+                tBox.insertBefore(vCounter, tBtn);
+
+                tBtn.innerText = "✅ VUELTA COMPLETADA";
+                tBtn.style.background = "var(--naranja)";
+                tBtn.onclick = function() {
+                    if (vRestantes <= 0) return;
+                    vRestantes--;
+                    vCounter.innerText = vRestantes > 0 ?
+                        'Vueltas restantes: ' + vRestantes :
+                        '🏆 ¡CALENTAMIENTO COMPLETO!';
+                    if (pausaV > 0 && vRestantes > 0) {
+                        iniciarDescansoCircuito(pausaV);
+                    }
+                    if (vRestantes <= 0) {
+                        tBtn.disabled = true;
+                        tBtn.style.background = "#27ae60";
+                        tBtn.innerText = "COMPLETADO";
+                    }
+                };
+            } else if (tipo === "Circuito por Tiempo") {
+                // FIX: usar duracion_bloque del config de calentamiento, no defaults de Tabata
+                const dur = det.duracion_bloque || 3;
+                const durSeg = dur * 60;
+                tBox.style.display = "block";
+                tStatus.innerText = "TIEMPO TOTAL: " + dur + " min";
+                tClock.style.display = "block";
+                tClock.innerText = dur + ":00";
+                tBtn.innerText = "▶ INICIAR TIEMPO";
+                tBtn.onclick = function() {
+                    iniciarBloqueTiempo('warmup-clock', 'warmup-btn', durSeg);
+                };
+            } else if (tipo === "Tabata") {
+                tBox.style.display = "block";
+                tStatus.innerText = "TABATA CALENTAMIENTO";
+                tClock.style.display = "block";
+                tClock.innerText = det.trabajo || 20;
+                tBtn.innerText = "INICIAR TABATA WARMUP";
+                tBtn.onclick = function() {
+                    iniciarTabataWarmup(ejsW, det);
+                };
+            } else if (tipo === "EMOM") {
+                tBox.style.display = "block";
+                tStatus.innerText = "EMOM CALENTAMIENTO";
+                tClock.style.display = "block";
+                tClock.innerText = "60";
+                tBtn.innerText = "INICIAR EMOM WARMUP";
+                tBtn.onclick = function() {
+                    iniciarEmomWarmup(det);
+                };
+            } else if (tipo === "Series/Reps") {
+                const seriesW = det.series || 3;
+                const repsW = det.reps || 10;
+                const pausaSerieW = calcularPausa(repsW);
+                tBox.style.display = "block";
+                tStatus.innerText = "SERIES DE CALENTAMIENTO — " + seriesW + " SERIES x " + repsW + " REPS";
+                tEj.innerText = "Descanso entre series: " + pausaSerieW + "s";
+                tClock.style.display = "block";
+                tClock.innerText = "--";
+                tBtn.style.background = "var(--verde)";
+
+                // Construir botones por serie con countdown de descanso
+                let wSeriesHtml = '';
+                for (let si = 0; si < seriesW; si++) {
+                    wSeriesHtml += '<div id="warmup-serie-' + si + '" style="margin-top:8px;">' +
+                        '<button class="btn-rest" id="warmup-serie-btn-' + si + '" onclick="marcarSerieWarmup(' + si + ',' + pausaSerieW + ',' + seriesW + ')">' +
+                        'SERIE ' + (si + 1) + ' DE ' + seriesW + '</button>' +
+                        '</div>';
+                }
+                tBtn.style.display = "none";
+                const wSeriesContainer = document.createElement('div');
+                wSeriesContainer.id = 'warmup-series-btns';
+                wSeriesContainer.innerHTML = wSeriesHtml;
+                tBox.appendChild(wSeriesContainer);
+            }
+        }
+
+        // ─── TIMERS DEL CALENTAMIENTO ───
+        // Dispatcher para el boton de calentamiento (fallback HTML)
+        function iniciarWarmupTimer() {
+            const tipo = (dataGlobal && dataGlobal.warmup_tipo) ? dataGlobal.warmup_tipo : "";
+            const det = (dataGlobal && dataGlobal.warmup_config_detalle) ? dataGlobal.warmup_config_detalle : {};
+            const ejsW = (dataGlobal && dataGlobal.warmup_ejercicios) ? dataGlobal.warmup_ejercicios : [];
+            if (tipo === "Tabata") {
+                iniciarTabataWarmup(ejsW, det);
+            } else if (tipo === "EMOM") {
+                iniciarEmomWarmup(det);
+            } else if (tipo === "Circuito por Tiempo") {
+                const durSeg = (det.duracion_bloque || 3) * 60;
+                iniciarBloqueTiempo('warmup-clock', 'warmup-btn', durSeg);
+            }
+        }
+
+        let warmupTabInterval = null;
+
+        function iniciarTabataWarmup(ejsW, det) {
+            if (warmupRunning) return;
+            warmupRunning = true;
+            document.getElementById('warmup-btn').disabled = true;
+            document.getElementById('warmup-btn').innerText = "EN CURSO...";
+            const trabajo = det.trabajo || 20;
+            const pausa = det.pausa || 10;
+            const totalEjs = ejsW.length;
+            let ejIdx = 0;
+
+            // Mostrar total de ejercicios al inicio
+            document.getElementById('warmup-status').innerText = "TABATA CALENTAMIENTO — " + totalEjs + " EJERCICIO(S)";
+
+            function siguiente() {
+                if (ejIdx >= totalEjs) {
+                    document.getElementById('warmup-status').innerText = "CALENTAMIENTO LISTO!";
+                    document.getElementById('warmup-status').style.color = "var(--azul)";
+                    document.getElementById('warmup-ej').innerText = "";
+                    document.getElementById('warmup-clock').innerText = "OK";
+                    warmupRunning = false;
                     return;
                 }
+                const ej = ejsW[ejIdx];
+                const nombre = Array.isArray(ej) ? ej[0] : (ej.nombre || ej.ejercicio || "");
+                document.getElementById('warmup-status').innerText = "TRABAJO — Ej " + (ejIdx + 1) + "/" + totalEjs;
+                document.getElementById('warmup-status').style.color = "var(--verde)";
+                document.getElementById('warmup-ej').innerText = nombre;
+                let rem = trabajo;
+                document.getElementById('warmup-clock').innerText = rem < 10 ? "0" + rem : rem;
+                warmupTabInterval = setInterval(function() {
+                    rem--;
+                    document.getElementById('warmup-clock').innerText = rem < 10 ? "0" + rem : rem;
+                    if (rem <= 0) {
+                        clearInterval(warmupTabInterval);
+                        document.getElementById('warmup-status').innerText = "DESCANSO";
+                        document.getElementById('warmup-status').style.color = "var(--rojo)";
+                        // Mostrar PROXIMO ejercicio durante el descanso
+                        const nextIdx = ejIdx + 1;
+                        if (nextIdx < totalEjs) {
+                            const nextEj = ejsW[nextIdx];
+                            const nextNombre = Array.isArray(nextEj) ? nextEj[0] : (nextEj.nombre || nextEj.ejercicio || "");
+                            document.getElementById('warmup-ej').innerText = "PROXIMO: " + nextNombre;
+                        } else {
+                            document.getElementById('warmup-ej').innerText = "ULTIMO EJERCICIO — CASI LISTO!";
+                        }
+                        let d = pausa;
+                        document.getElementById('warmup-clock').innerText = d < 10 ? "0" + d : d;
+                        warmupTabInterval = setInterval(function() {
+                            d--;
+                            document.getElementById('warmup-clock').innerText = d < 10 ? "0" + d : d;
+                            if (d <= 0) {
+                                clearInterval(warmupTabInterval);
+                                ejIdx++;
+                                siguiente();
+                            }
+                        }, 1000);
+                    }
+                }, 1000);
+            }
+            siguiente();
+        }
 
-                rutinaActual = data.rutina;
-                let html = `<h2>🔥 ENTRADA EN CALOR</h2>`;
-                html += `<div class="config-pill">Realizar <b>${data.warmup_vueltas} vueltas</b> de forma continua.</div>`;
-                data.warmup_ejercicios.forEach(ej => {
-                    html += crearTarjeta(ej[0], ej[1], ej[2] + " REPS");
+        let warmupEmomInterval = null;
+
+        function iniciarEmomWarmup(det) {
+            if (warmupRunning) return;
+            warmupRunning = true;
+            document.getElementById('warmup-btn').disabled = true;
+            document.getElementById('warmup-btn').innerText = "EN CURSO...";
+            const mins = det.minutos || 5;
+            // Leer lista de ejercicios del warmup desde dataGlobal
+            const ejsW = (dataGlobal && dataGlobal.warmup_ejercicios) ? dataGlobal.warmup_ejercicios : [];
+            const ejsPorMin = ejsW.length > 0 ? Math.ceil(ejsW.length / mins) : 1;
+            let minActual = 0;
+
+            function sig() {
+                if (minActual >= mins) {
+                    document.getElementById('warmup-status').innerText = "CALENTAMIENTO LISTO!";
+                    document.getElementById('warmup-status').style.color = "var(--azul)";
+                    document.getElementById('warmup-ej').innerText = "";
+                    document.getElementById('warmup-clock').innerText = "OK";
+                    warmupRunning = false;
+                    return;
+                }
+                document.getElementById('warmup-status').innerText = "MINUTO " + (minActual + 1) + "/" + mins;
+                // Mostrar ejercicio(s) del minuto actual
+                if (ejsW.length > 0) {
+                    const startIdx = minActual * ejsPorMin;
+                    const endIdx = Math.min(startIdx + ejsPorMin, ejsW.length);
+                    const ejsMinuto = [];
+                    for (var ei = startIdx; ei < endIdx; ei++) {
+                        const ej = ejsW[ei];
+                        ejsMinuto.push(Array.isArray(ej) ? ej[0] : (ej.nombre || ej.ejercicio || ""));
+                    }
+                    if (ejsMinuto.length > 0) {
+                        document.getElementById('warmup-ej').innerText = ejsMinuto.join(" | ");
+                    } else {
+                        // Si ya se agotaron los ejercicios, mostrar el ultimo
+                        const lastEj = ejsW[ejsW.length - 1];
+                        document.getElementById('warmup-ej').innerText = Array.isArray(lastEj) ? lastEj[0] : (lastEj.nombre || lastEj.ejercicio || "");
+                    }
+                }
+                let rem = 60;
+                document.getElementById('warmup-clock').innerText = rem;
+                warmupEmomInterval = setInterval(function() {
+                    rem--;
+                    document.getElementById('warmup-clock').innerText = rem;
+                    if (rem <= 0) {
+                        clearInterval(warmupEmomInterval);
+                        beep(800);
+                        minActual++;
+                        sig();
+                    }
+                }, 1000);
+            }
+            sig();
+        }
+
+        // ─── TIMER SERIES WARMUP ───
+        const warmupSeriesRestantes = {};
+        const warmupSeriesIntervals = {};
+
+        function marcarSerieWarmup(idx, pausaSeg, totalSeries) {
+            if (warmupSeriesRestantes[idx] === undefined) warmupSeriesRestantes[idx] = 1;
+            // Solo puede ejecutarse una vez por boton
+            const btn = document.getElementById("warmup-serie-btn-" + idx);
+            if (!btn || btn.disabled) return;
+            btn.disabled = true;
+            btn.classList.add('active');
+            btn.innerText = "DESCANSANDO...";
+
+            // Mostrar countdown en warmup-clock y warmup-ej
+            document.getElementById('warmup-status').innerText = "DESCANSO — Serie " + (idx + 1) + "/" + totalSeries;
+            document.getElementById('warmup-status').style.color = "var(--rojo)";
+            const clock = document.getElementById('warmup-clock');
+            clock.style.display = "block";
+            let rem = pausaSeg;
+            clock.innerText = rem;
+            document.getElementById('warmup-ej').innerText = "Recuperate antes de la siguiente serie";
+
+            warmupSeriesIntervals[idx] = setInterval(function() {
+                rem--;
+                clock.innerText = rem;
+                if (rem <= 3 && rem > 0) beep(400);
+                if (rem <= 0) {
+                    clearInterval(warmupSeriesIntervals[idx]);
+                    beep(800);
+                    btn.innerText = "SERIE " + (idx + 1) + " COMPLETADA";
+                    btn.style.background = "#27ae60";
+                    clock.innerText = "--";
+                    document.getElementById('warmup-ej').innerText = "";
+                    // Verificar si hay mas series
+                    const nextIdx = idx + 1;
+                    if (nextIdx < totalSeries) {
+                        document.getElementById('warmup-status').innerText = "LISTA PARA SERIE " + (nextIdx + 1) + "/" + totalSeries;
+                        document.getElementById('warmup-status').style.color = "var(--verde)";
+                    } else {
+                        document.getElementById('warmup-status').innerText = "CALENTAMIENTO LISTO!";
+                        document.getElementById('warmup-status').style.color = "var(--azul)";
+                    }
+                }
+            }, 1000);
+        }
+
+        // ─── RENDER PRINCIPAL ───
+        function render(data) {
+            renderWarmup(data);
+
+            document.getElementById('sec-emom-ui').style.display = "none";
+            document.getElementById('sec-timer-ui').style.display = "none";
+
+            const pLista = document.getElementById('principal-lista');
+            const pTitulo = document.getElementById('principal-titulo');
+            pLista.innerHTML = '';
+
+            const ejerciciosPrincipales = data.rutina || data.datos || [];
+
+            if (data.tipo === "Series") renderSeries(data, pTitulo, pLista, ejerciciosPrincipales);
+            else if (data.tipo === "Circuito") renderCircuito(data, pTitulo, pLista, ejerciciosPrincipales);
+            else if (data.tipo === "Tabata") renderTabata(data, pTitulo, pLista, ejerciciosPrincipales);
+            else if (data.tipo === "Circuito por Tiempo") renderCircuitoTiempo(data, pTitulo, pLista, ejerciciosPrincipales);
+            else if (data.tipo === "EMOM") renderEmom(data, pTitulo, pLista);
+            else if (data.tipo === "MIX") renderMix(data, pTitulo, pLista);
+            else {
+                pTitulo.innerText = "ENTRENAMIENTO";
+                ejerciciosPrincipales.forEach(function(ej) {
+                    const n = Array.isArray(ej) ? ej[0] : (ej.nombre || "");
+                    const l = Array.isArray(ej) ? ej[1] : (ej.link || "");
+                    pLista.innerHTML += crearCard(n, l, "");
+                });
+            }
+        }
+
+        // ─── MODO SERIES ───
+        function renderSeries(data, pTitulo, pLista, ejercicios) {
+            pTitulo.innerText = "MODO SERIES";
+            ejercicios.forEach(function(ej, i) {
+                const pausa = calcularPausa(ej.reps);
+                seriesRestantes[i] = parseInt(ej.series);
+                pLista.innerHTML += '<div class="serie-card">' +
+                    '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+                    '<b style="font-size:1.2rem;">' + ej.nombre + '</b>' +
+                    '<a href="' + ej.link + '" target="_blank" class="btn-youtube">VIDEO</a>' +
+                    '</div><div class="serie-meta">' +
+                    '<div>SERIES: <b id="s-val-' + i + '">' + ej.series + '</b></div>' +
+                    '<div>REPS: <b>' + ej.reps + '</b></div>' +
+                    '<div>DESC: <b style="color:var(--naranja)">' + pausa + 's</b></div>' +
+                    '</div><div style="text-align:center; margin-top:15px;">' +
+                    '<div class="timer-display" id="timer-' + i + '">' + pausa + '</div>' +
+                    '<button class="btn-rest" id="btn-' + i + '" onclick="marcarSerie(' + i + ',' + pausa + ')">MARCAR SERIE</button>' +
+                    '</div></div>';
+            });
+        }
+
+        // ─── MODO CIRCUITO ───
+        function renderCircuito(data, pTitulo, pLista, ejercicios) {
+            pTitulo.innerText = "MODO CIRCUITO";
+            const vBloque = data.vueltas_bloque || 3;
+            const pausaVuelta = data.pausa_vuelta || 60;
+
+            // FIX: contador de vueltas con descuento
+            let vRestantes = vBloque;
+            const vContId = 'circ-vueltas-counter';
+            if (pausaVuelta > 0) {
+                pLista.innerHTML += '<div style="background:#1a2537; border:1px solid var(--naranja); border-radius:12px; padding:12px 18px; margin-bottom:16px; color:var(--naranja); font-weight:bold;">PAUSA ENTRE VUELTAS: ' + pausaVuelta + 's</div>';
+            }
+            pLista.innerHTML += '<div id="' + vContId + '" style="text-align:center; font-size:1.5rem; font-weight:900; color:var(--amarillo); padding:12px; background:#1a2537; border-radius:12px; margin-bottom:12px;">Vueltas restantes: ' + vRestantes + '</div>';
+            ejercicios.forEach(function(b, bIdx) {
+                pLista.innerHTML += '<div style="background:var(--purpura); color:white; padding:12px; border-radius:12px; margin-top:20px; display:flex; justify-content:space-between; align-items:center;"><b>CIRCUITO ' + (bIdx + 1) + ' (' + vBloque + ' VUELTAS)</b></div>';
+                b.ejercicios.forEach(function(ej) {
+                    pLista.innerHTML += crearCard(ej.nombre, ej.link, ej.reps + " REPS");
+                });
+            });
+            // Botón vuelta completada con descuento
+            pLista.innerHTML += '<div style="margin-top:16px; text-align:center;">' +
+                '<button id="circ-btn-vuelta" class="btn-rest" onclick="marcarVueltaCircuito(' + pausaVuelta + ',\'' + vContId + '\',' + vBloque + ')" style="max-width:400px; margin:0 auto;">✅ VUELTA COMPLETADA</button>' +
+                '</div>';
+        }
+
+        let circVueltasRestantes = 0;
+
+        function marcarVueltaCircuito(pausaVuelta, contId, totalVueltas) {
+            if (circVueltasRestantes === 0) circVueltasRestantes = totalVueltas;
+            if (circVueltasRestantes <= 0) return;
+            circVueltasRestantes--;
+            const el = document.getElementById(contId);
+            if (el) el.innerText = circVueltasRestantes > 0 ?
+                'Vueltas restantes: ' + circVueltasRestantes :
+                '🏆 ¡CIRCUITO COMPLETO!';
+            if (circVueltasRestantes <= 0) {
+                const btn = document.getElementById('circ-btn-vuelta');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerText = "COMPLETADO";
+                    btn.style.background = "#27ae60";
+                }
+                return;
+            }
+            if (pausaVuelta > 0) {
+                iniciarDescansoCircuito(pausaVuelta);
+            }
+        }
+
+        // ─── MODO CIRCUITO POR TIEMPO ───
+        // FIX: pasar nombre y video_url en el array de ejercicios; usar tiempo del bloque para el timer
+        function renderCircuitoTiempo(data, pTitulo, pLista, ejercicios) {
+            pTitulo.innerText = "CIRCUITO POR TIEMPO";
+
+            // Si los ejercicios vienen en formato de bloques (con tiempo_min)
+            const tieneBloques = ejercicios.length > 0 && ejercicios[0] && ejercicios[0].ejercicios;
+
+            if (tieneBloques) {
+                // Formato de bloques: cada elemento es un bloque con ejercicios y tiempo_min
+                ejercicios.forEach(function(bloque, bIdx) {
+                    const tiempoMin = bloque.tiempo_min || 5;
+                    const tiempoSeg = tiempoMin * 60;
+                    const timerId = 'ct-timer-' + bIdx;
+                    const btnId = 'ct-btn-' + bIdx;
+
+                    let html = '<div style="background:#0f172a; border:2px solid #1a8bc0; border-radius:16px; padding:18px; margin-bottom:20px;">' +
+                        '<div style="color:#1a8bc0; font-size:1.1rem; font-weight:900; margin-bottom:10px;">BLOQUE #' + (bloque.id || (bIdx + 1)) + ' — ' + tiempoMin + ' MINUTOS</div>';
+                    (bloque.ejercicios || []).forEach(function(ej) {
+                        // FIX: mostrar nombre y video correctamente
+                        const nombre = ej.nombre || ej[0] || "";
+                        const link = ej.link || ej[1] || "";
+                        const reps = ej.reps || ej[2] || "";
+                        html += crearCard(nombre, link, reps ? reps + " REPS" : "");
+                    });
+                    html += '<div id="' + timerId + '" style="font-size:3rem; font-family:Impact; color:var(--amarillo); text-align:center; margin:10px 0;">' + tiempoMin + ':00</div>' +
+                        '<button id="' + btnId + '" class="btn-rest" onclick="iniciarBloqueTiempoConDescuento(\'' + timerId + '\',\'' + btnId + '\',' + tiempoSeg + ')">▶ INICIAR BLOQUE</button>' +
+                        '</div>';
+                    pLista.innerHTML += html;
+                });
+            } else {
+                // Formato plano: lista de ejercicios con timer global
+                // FIX: usar el tiempo configurado desde dataGlobal, no el default de Tabata
+                const tiempoConfig = (dataGlobal && dataGlobal.config && dataGlobal.config.trabajo) ?
+                    null // Es Tabata, no aplica aqui
+                    :
+                    null;
+
+                document.getElementById('sec-timer-ui').style.display = "block";
+                const btnPausa = document.getElementById('btnPausaTimer');
+                if (btnPausa) btnPausa.style.display = "block";
+
+                ejercicios.forEach(function(ej, i) {
+                    // FIX: soportar tanto array como objeto para incluir nombre y video
+                    const n = Array.isArray(ej) ? ej[0] : (ej.nombre || ej.ejercicio || "");
+                    const l = Array.isArray(ej) ? ej[1] : (ej.link || "");
+                    const r = Array.isArray(ej) ? (ej[2] || "") : (ej.reps || "");
+                    pLista.innerHTML += crearCard(n, l, r ? r + " REPS" : "TIEMPO");
                 });
 
-                // Lógica corregida para Circuitos Múltiples
-                if (data.tipo === "Circuito") {
-                    document.getElementById('timer-container').style.display = "none";
-                    html += `<h2 style="color:var(--verde); border-color:var(--verde)">🔄 CIRCUITO PRINCIPAL</h2>`;
-                    html += `<div class="config-pill">Dar un total de <b>${data.vueltas_bloque} vueltas</b> a cada bloque.</div>`;
-
-                    // AQUÍ ESTÁ EL CAMBIO: Recorremos todos los bloques del JSON
-                    data.rutina.forEach(bloque => {
-                        html += `<span class="bloque-titulo">Bloque #${bloque.id}</span>`;
-                        bloque.ejercicios.forEach(ej => {
-                            html += crearTarjeta(ej.nombre, ej.link, ej.reps + " REPS");
-                        });
-                    });
-                } else {
-                    // Modo Tabata
-                    configTabata = data.config;
-                    document.getElementById('timer-container').style.display = "block";
-                    html += `<h2 style="color:var(--verde); border-color:var(--verde)">⏱️ BLOQUE TABATA</h2>`;
-                    html += `<div class="config-pill"><b>Trabajo:</b> ${configTabata.trabajo}s | <b>Pausa:</b> ${configTabata.pausa}s | <b>Rondas:</b> ${configTabata.rondas}</div>`;
-                    data.rutina.forEach((ej, i) => {
-                        html += crearTarjeta(`${i+1}. ${ej[0]}`, ej[1], "MODO TIMER");
-                    });
+                // FIX: establecer config de tiempo para Circuito por Tiempo (no Tabata)
+                // Si dataGlobal no tiene config.trabajo/pausa, usar valores del bloque de tiempo
+                if (dataGlobal && (!dataGlobal.config || !dataGlobal.config.trabajo)) {
+                    const tiempoMin = (dataGlobal.datos && dataGlobal.datos[0] && dataGlobal.datos[0].tiempo_min) ||
+                        (dataGlobal.config && dataGlobal.config.duracion_bloque) ||
+                        5;
+                    dataGlobal.config = dataGlobal.config || {};
+                    dataGlobal.config.trabajo = tiempoMin * 60;
+                    dataGlobal.config.pausa = 0;
+                    dataGlobal.config.rondas = 1;
+                    dataGlobal.config.pausa_entre_rondas = 0;
                 }
-
-                document.getElementById('contenido-rutina').innerHTML = html;
-                document.getElementById('rutina-modal').style.display = "block";
-                resetTimer();
-
-            } catch (e) {
-                console.error(e);
             }
         }
 
-        // --- LÓGICA DEL TIMER (TABATA) ---
-        function iniciarConPreparacion() {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            document.getElementById('btnPlay').style.display = "none";
-            fase = "preparacion";
-            tiempoRestante = 5;
-            document.getElementById('timer-status').innerText = "PREPARACIÓN";
-            document.getElementById('timer-container').style.borderColor = "#f1c40f";
-            timerInterval = setInterval(logicaTimer, 1000);
+        // ─── MODO TABATA ───
+        function renderTabata(data, pTitulo, pLista, ejercicios) {
+            pTitulo.innerText = "MODO TABATA";
+            document.getElementById('sec-timer-ui').style.display = "block";
+
+            // FIX: mostrar boton de pausa en Tabata
+            const btnPausa = document.getElementById('btnPausaTimer');
+            if (btnPausa) {
+                btnPausa.style.display = "block";
+                btnPausa.innerText = "⏸ PAUSAR";
+                timerPausado = false;
+            }
+
+            const config = data.config || {
+                trabajo: 20,
+                pausa: 10,
+                rondas: 1,
+                cantidad: 8,
+                pausa_entre_rondas: 0
+            };
+            const pr = config.pausa_entre_rondas || 0;
+
+            // FIX: lista clara y legible como en los demas modos (similar a crearCardNumero)
+            pLista.innerHTML += '<div style="background:#1a2537; border:2px solid #d35400; border-radius:14px; padding:14px 18px; margin-bottom:18px;">' +
+                '<div style="color:#e67e22; font-weight:900; font-size:1.1rem;">' + config.trabajo + 's TRABAJO / ' + config.pausa + 's DESCANSO</div>' +
+                '<div style="color:#f1c40f; font-size:0.95rem; margin-top:4px;">' + config.rondas + ' RONDA(S)' + (config.cantidad ? ' × ' + config.cantidad + ' SERIES' : '') + '</div>' +
+                (pr > 0 ? '<div style="color:var(--purpura); font-size:0.9rem; margin-top:4px;">Pausa entre rondas: ' + pr + 's</div>' : '') +
+                '</div>';
+
+            ejercicios.forEach(function(ej, i) {
+                // FIX: soportar array [nombre, link] y objeto {nombre, link}
+                const n = Array.isArray(ej) ? ej[0] : (ej.nombre || ej.ejercicio || "");
+                const l = Array.isArray(ej) ? ej[1] : (ej.link || "");
+                // Usar crearCardNumero para mayor claridad visual
+                pLista.innerHTML += crearCardNumero(i + 1, ejercicios.length, n, l);
+            });
         }
 
-        function logicaTimer() {
-            if (tiempoRestante <= 3 && tiempoRestante > 0) playBeep(440);
-            if (tiempoRestante === 0) {
-                playBeep(880);
-                cambiarFase();
+        // ─── MODO EMOM ───
+        function renderEmom(data, pTitulo, pLista) {
+            pTitulo.innerText = "MODO EMOM";
+            document.getElementById('sec-emom-ui').style.display = "block";
+            const minutos = data.minutos_totales || 10;
+            const ejsPorMin = data.ejercicios_por_minuto || 1;
+            const repsDict = data.reps_por_ejercicio || {};
+            const rutina = data.rutina || [];
+            pLista.innerHTML += '<div style="background:#1a2537; border:1px solid var(--amarillo); border-radius:12px; padding:12px 18px; margin-bottom:16px; color:var(--amarillo); font-weight:bold;">' + minutos + ' MINUTOS TOTALES — ' + ejsPorMin + ' EJ/MIN</div>';
+            rutina.forEach(function(ej, i) {
+                const n = Array.isArray(ej) ? ej[0] : (ej.nombre || ej.ejercicio);
+                const l = Array.isArray(ej) ? ej[1] : (ej.link || "");
+                const reps = repsDict[n] || "";
+                pLista.innerHTML += crearCard(n, l, reps ? reps + " REPS" : "EMOM");
+            });
+            document.getElementById('emom-status').innerText = "LISTO?";
+            document.getElementById('emom-clock').innerText = "60";
+            document.getElementById('emom-minuto').innerText = "0 de " + minutos + " minutos";
+            document.getElementById('btnStartEmom').style.display = "inline-block";
+        }
+
+        // ─── MODO MIX ───
+        // Variable global para almacenar los bloques del Mix y acceder desde iniciarTabataMixEnUI e iniciarEmomMix
+        var bloquesMix = [];
+
+        function renderMix(data, pTitulo, pLista) {
+            pTitulo.innerText = "MODO MIX";
+
+            // Nuevo formato: bloques[]
+            const bloques = data.bloques || [];
+
+            // Guardar en variable global para que iniciarTabataMixEnUI e iniciarEmomMix puedan leerlos por indice
+            bloquesMix = bloques;
+
+            if (bloques.length > 0) {
+                bloques.forEach(function(bloque, idx) {
+                    renderBloqueMix(pLista, bloque, idx + 1);
+                });
+                return;
+            }
+
+            // Fallback: formato antiguo (campos separados)
+            const modos = data.modos_seleccionados || [];
+
+            if (data.circuito && data.circuito.length > 0 && modos.indexOf("circuito") !== -1) {
+                const vueltas = data.circuito_vueltas || 3;
+                const pausaV = data.pausa_vuelta || 0;
+                let html = '<div class="mix-seccion" style="border-color:#2980b9;"><div class="mix-seccion-titulo" style="color:#2980b9;">CIRCUITO POR VUELTAS (' + vueltas + ' vueltas)</div>' + (pausaV > 0 ? '<div style="color:var(--naranja); font-size:0.9rem; margin-bottom:10px;">Pausa entre vueltas: ' + pausaV + 's</div>' : '');
+                data.circuito.forEach(function(b) {
+                    html += '<div style="color:#5dade2; font-weight:bold; margin-top:10px; margin-bottom:4px;">Bloque #' + b.id + '</div>';
+                    b.ejercicios.forEach(function(ej) {
+                        html += crearCard(ej.nombre, ej.link, ej.reps + " REPS");
+                    });
+                });
+                html += '<div style="margin-top:12px;" id="mix-old-circ-cont"><div id="mix-old-circ-vcount" style="color:var(--amarillo); font-weight:900; text-align:center; margin-bottom:8px;">Vueltas restantes: ' + vueltas + '</div>';
+                if (pausaV > 0) html += '<button class="btn-rest" onclick="marcarVueltaMixOld(\'mix-old-circ-vcount\',' + pausaV + ',' + vueltas + ')">✅ VUELTA COMPLETADA</button>';
+                html += '</div></div>';
+                pLista.innerHTML += html;
+            }
+
+            if (data.circuito_tiempo && data.circuito_tiempo.length > 0 && modos.indexOf("circ_tiempo") !== -1) {
+                let html = '<div class="mix-seccion" style="border-color:#1a8bc0;"><div class="mix-seccion-titulo" style="color:#1a8bc0;">CIRCUITO POR TIEMPO</div>';
+                data.circuito_tiempo.forEach(function(b, bIdx) {
+                    const tiempo = b.tiempo_min || 5;
+                    const timerIdVal = "mix-ct-" + bIdx;
+                    const btnIdVal = "mix-ct-btn-" + bIdx;
+                    html += '<div style="background:#0f172a; border-radius:12px; padding:12px; margin-bottom:12px;"><div style="color:#5dade2; font-weight:bold; margin-bottom:8px;">Bloque #' + b.id + ' — ' + tiempo + ' min</div>';
+                    b.ejercicios.forEach(function(ej) {
+                        html += crearCard(ej.nombre, ej.link, ej.reps + " REPS");
+                    });
+                    html += '<div id="' + timerIdVal + '" style="font-size:2.5rem; font-family:Impact; color:var(--amarillo); text-align:center; margin:8px 0;">' + tiempo + ':00</div><button id="' + btnIdVal + '" class="btn-rest" onclick="iniciarBloqueTiempoConDescuento(\'' + timerIdVal + '\',\'' + btnIdVal + '\',' + (tiempo * 60) + ')">INICIAR BLOQUE</button></div>';
+                });
+                html += '</div>';
+                pLista.innerHTML += html;
+            }
+
+            if (data.tabata && data.tabata.length > 0 && modos.indexOf("tabata") !== -1) {
+                const tc = data.tabata_config || {
+                    trabajo: 20,
+                    pausa: 10,
+                    rondas: 1,
+                    cantidad: 8,
+                    pausa_entre_rondas: 0
+                };
+                pLista.innerHTML += renderTabataMixInline(data.tabata, tc, "mix-tab");
+            }
+
+            if (data.emom && data.emom.length > 0 && modos.indexOf("emom") !== -1) {
+                const ec = data.emom_config || {
+                    minutos_totales: 10,
+                    ejercicios_por_minuto: 1
+                };
+                pLista.innerHTML += renderEmomMixInline(data.emom, ec, data.reps_por_ejercicio || {}, "mix-emom");
+            }
+
+            if (data.series && data.series.length > 0 && modos.indexOf("series") !== -1) {
+                renderSeriesMixInline(pLista, data.series, 9000);
+            }
+        }
+
+        // Helper para modo antiguo circuito mix (vuelta con descuento)
+        const mixOldCircVueltas = {};
+
+        function marcarVueltaMixOld(contId, pausaVuelta, totalVueltas) {
+            if (!mixOldCircVueltas[contId]) mixOldCircVueltas[contId] = totalVueltas;
+            if (mixOldCircVueltas[contId] <= 0) return;
+            mixOldCircVueltas[contId]--;
+            const el = document.getElementById(contId);
+            if (el) el.innerText = mixOldCircVueltas[contId] > 0 ?
+                'Vueltas restantes: ' + mixOldCircVueltas[contId] :
+                '🏆 ¡CIRCUITO COMPLETO!';
+            if (pausaVuelta > 0 && mixOldCircVueltas[contId] > 0) iniciarDescansoCircuito(pausaVuelta);
+        }
+
+        function renderBloqueMix(pLista, bloque, idx) {
+            const tipo = bloque.tipo || "";
+            const colorMap = {
+                "Circuito": "#2980b9",
+                "Circuito por Tiempo": "#1a8bc0",
+                "Tabata": "#d35400",
+                "EMOM": "var(--amarillo)",
+                "Series": "#27ae60"
+            };
+            const color = colorMap[tipo] || "var(--purpura)";
+            const uid = "blq-" + idx;
+
+            if (tipo === "Circuito") {
+                const vueltas = bloque.vueltas || 3;
+                const pausaV = bloque.pausa_vuelta || 0;
+                const vContId = uid + '-vcount';
+                let html = '<div class="bloque-mix" style="border-color:' + color + '">' +
+                    '<div class="bloque-mix-titulo" style="color:' + color + '">BLOQUE ' + idx + ' — CIRCUITO (' + vueltas + ' VUELTAS)</div>' +
+                    (pausaV > 0 ? '<div style="color:var(--naranja); font-size:0.9rem; margin-bottom:10px;">Pausa entre vueltas: ' + pausaV + 's</div>' : '') +
+                    '<div id="' + vContId + '" style="color:var(--amarillo); font-weight:900; text-align:center; font-size:1.2rem; margin-bottom:10px;">Vueltas restantes: ' + vueltas + '</div>';
+                (bloque.rutina || []).forEach(function(b) {
+                    html += '<div style="color:#5dade2; font-weight:bold; margin-top:10px;">Bloque #' + b.id + '</div>';
+                    b.ejercicios.forEach(function(ej) {
+                        html += crearCard(ej.nombre, ej.link, ej.reps + " REPS");
+                    });
+                });
+                // FIX: boton de vuelta con descuento en Mix
+                html += '<button id="' + uid + '-btn-vuelta" class="btn-rest" style="margin-top:10px;" ' +
+                    'onclick="marcarVueltaMixBloque(\'' + uid + '\',\'' + vContId + '\',' + pausaV + ',' + vueltas + ')">✅ VUELTA COMPLETADA</button>';
+                html += '</div>';
+                pLista.innerHTML += html;
+
+            } else if (tipo === "Circuito por Tiempo") {
+                let html = '<div class="bloque-mix" style="border-color:' + color + '">' +
+                    '<div class="bloque-mix-titulo" style="color:' + color + '">BLOQUE ' + idx + ' — CIRCUITO POR TIEMPO</div>';
+                (bloque.rutina || []).forEach(function(b, bIdx) {
+                    const tiempo = b.tiempo_min || 5;
+                    const tId = uid + "-ct-" + bIdx;
+                    const bId = uid + "-ct-btn-" + bIdx;
+                    html += '<div style="background:#0f172a; border-radius:12px; padding:12px; margin-bottom:10px;">' +
+                        '<div style="color:#5dade2; font-weight:bold; margin-bottom:6px;">Bloque #' + b.id + ' — ' + tiempo + ' min</div>';
+                    (b.ejercicios || []).forEach(function(ej) {
+                        // FIX: mostrar nombre y video correctamente en bloques mix CT
+                        html += crearCard(ej.nombre || ej[0] || "", ej.link || ej[1] || "", (ej.reps || ej[2] || "") + (ej.reps ? " REPS" : ""));
+                    });
+                    html += '<div id="' + tId + '" style="font-size:2.5rem; font-family:Impact; color:var(--amarillo); text-align:center; margin:8px 0;">' + tiempo + ':00</div>' +
+                        '<button id="' + bId + '" class="btn-rest" onclick="iniciarBloqueTiempoConDescuento(\'' + tId + '\',\'' + bId + '\',' + (tiempo * 60) + ')">INICIAR BLOQUE</button></div>';
+                });
+                html += '</div>';
+                pLista.innerHTML += html;
+
+            } else if (tipo === "Tabata") {
+                const tc = {
+                    trabajo: bloque.trabajo || 20,
+                    pausa: bloque.pausa || 10,
+                    rondas: bloque.rondas || 1,
+                    cantidad: bloque.cantidad || 8,
+                    pausa_entre_rondas: bloque.pausa_entre_rondas || 0
+                };
+                const rutinaTab = bloque.rutina || [];
+                // Usar la interfaz unificada #sec-timer-ui igual que el Modo Tabata independiente
+                let htmlTab = '<div class="bloque-mix" style="border-color:#d35400;">' +
+                    '<div class="bloque-mix-titulo" style="color:#d35400;">BLOQUE ' + idx + ' — TABATA</div>' +
+                    '<div style="background:#1a2537; border:2px solid #d35400; border-radius:14px; padding:14px 18px; margin-bottom:12px;">' +
+                    '<div style="color:#e67e22; font-weight:900; font-size:1.1rem;">' + tc.trabajo + 's TRABAJO / ' + tc.pausa + 's DESCANSO</div>' +
+                    '<div style="color:#f1c40f; font-size:0.95rem; margin-top:4px;">' + tc.rondas + ' RONDA(S) x ' + tc.cantidad + ' SERIES</div>' +
+                    (tc.pausa_entre_rondas > 0 ? '<div style="color:var(--purpura); font-size:0.9rem; margin-top:4px;">Pausa entre rondas: ' + tc.pausa_entre_rondas + 's</div>' : '') +
+                    '</div>';
+                rutinaTab.forEach(function(ej, i) {
+                    const n = Array.isArray(ej) ? ej[0] : (ej.nombre || ej.ejercicio || "");
+                    const l = Array.isArray(ej) ? ej[1] : (ej.link || "");
+                    htmlTab += crearCardNumero(i + 1, rutinaTab.length, n, l);
+                });
+                // FIX: usar indice en bloquesMix en lugar de datos JSON inlineados para evitar
+                // problemas con caracteres especiales en nombres de ejercicios
+                htmlTab += '<button class="btn-principal" id="' + uid + '-tab-start-btn" style="background:var(--naranja); margin-top:16px; width:100%;" ' +
+                    'onclick="iniciarTabataMixEnUI(' + (idx - 1) + ')">INICIAR TABATA</button>' +
+                    '</div>';
+                pLista.innerHTML += htmlTab;
+
+            } else if (tipo === "EMOM") {
+                const ec = {
+                    minutos_totales: bloque.minutos_totales || 10,
+                    ejercicios_por_minuto: bloque.ejercicios_por_minuto || 1
+                };
+                const repsDict = bloque.reps_por_ejercicio || {};
+                const emomUid = uid + "-emom";
+                const emomStatusId = emomUid + "-status";
+                const emomRoundId = emomUid + "-round";
+                const emomClockId = emomUid + "-clock";
+                const emomBtnId = emomUid + "-btn";
+                let emomHtml = '<div class="bloque-mix" style="border-color:var(--amarillo);">' +
+                    '<div class="bloque-mix-titulo" style="color:var(--amarillo);">BLOQUE ' + idx + ' — EMOM — ' + ec.minutos_totales + ' min | ' + ec.ejercicios_por_minuto + ' ej/min</div>';
+                (bloque.rutina || []).forEach(function(ej, ejI) {
+                    const n = Array.isArray(ej) ? ej[0] : (ej.nombre || ej);
+                    const l = Array.isArray(ej) ? ej[1] : (ej.link || "");
+                    const reps = repsDict[n] || "";
+                    emomHtml += crearCard(n, l, reps ? reps + " REPS" : "EMOM");
+                });
+                // FIX: usar indice en bloquesMix en lugar de datos inlineados
+                emomHtml += '<div style="background:#0f172a; border-radius:12px; padding:16px; margin-top:12px; text-align:center;">' +
+                    '<div id="' + emomStatusId + '" style="font-size:1.2rem; font-weight:900; color:var(--amarillo);">LISTO PARA EMOM</div>' +
+                    '<div id="' + emomRoundId + '" style="font-size:0.9rem; color:var(--amarillo);"></div>' +
+                    '<div id="' + emomClockId + '" style="font-size:5rem; font-family:Impact; color:white;">60</div>' +
+                    '<button id="' + emomBtnId + '" class="btn-rest" style="max-width:280px; margin:0 auto; background:var(--amarillo); color:#000;" ' +
+                    'onclick="iniciarEmomMix(' + (idx - 1) + ', \'' + emomBtnId + '\', \'' + emomStatusId + '\', \'' + emomRoundId + '\', \'' + emomClockId + '\')">INICIAR EMOM</button>' +
+                    '</div></div>';
+                pLista.innerHTML += emomHtml;
+
+            } else if (tipo === "Series") {
+                const serialOffset = idx * 100;
+                renderSeriesMixInline(pLista, bloque.rutina || [], serialOffset);
+            }
+        }
+
+        // FIX: vuelta Mix con descuento
+        const mixBloqueVueltas = {};
+
+        function marcarVueltaMixBloque(uid, contId, pausaVuelta, totalVueltas) {
+            if (!mixBloqueVueltas[uid]) mixBloqueVueltas[uid] = totalVueltas;
+            if (mixBloqueVueltas[uid] <= 0) return;
+            mixBloqueVueltas[uid]--;
+            const el = document.getElementById(contId);
+            if (el) el.innerText = mixBloqueVueltas[uid] > 0 ?
+                'Vueltas restantes: ' + mixBloqueVueltas[uid] :
+                '🏆 ¡BLOQUE COMPLETO!';
+            const btn = document.getElementById(uid + '-btn-vuelta');
+            if (mixBloqueVueltas[uid] <= 0 && btn) {
+                btn.disabled = true;
+                btn.innerText = "COMPLETADO";
+                btn.style.background = "#27ae60";
+                return;
+            }
+            if (pausaVuelta > 0) iniciarDescansoCircuito(pausaVuelta);
+        }
+
+        function renderTabataMixInline(rutina, tc, uid) {
+            const statusId = uid + "-status",
+                ejId = uid + "-ej",
+                infoId = uid + "-info";
+            const timerId = uid + "-clock",
+                btnId = uid + "-btn",
+                pausaId = uid + "-pausa";
+            let html = '<div class="mix-seccion" style="border-color:#d35400;">' +
+                '<div class="mix-seccion-titulo" style="color:#d35400;">TABATA — ' + tc.trabajo + 's / ' + tc.pausa + 's / ' + tc.rondas + ' ronda(s)' + (tc.pausa_entre_rondas > 0 ? ' / ' + tc.pausa_entre_rondas + 's pausa rondas' : '') + '</div>';
+            rutina.forEach(function(ej, i) {
+                // FIX: soportar nombre y link en array y objeto
+                const n = Array.isArray(ej) ? ej[0] : (ej.nombre || ej);
+                const l = Array.isArray(ej) ? ej[1] : (ej.link || "");
+                html += crearCardNumero(i + 1, rutina.length, n, l);
+            });
+            html += '<div style="background:#0f172a; border-radius:12px; padding:16px; margin-top:12px; text-align:center;">' +
+                '<div id="' + statusId + '" style="font-size:1.2rem; font-weight:900; color:#e67e22;">LISTO PARA TABATA</div>' +
+                '<div id="' + ejId + '" style="font-size:1rem; color:var(--naranja); min-height:1.5rem;"></div>' +
+                '<div id="' + infoId + '" style="font-size:0.85rem; color:var(--amarillo);"></div>' +
+                '<div id="' + timerId + '" style="font-size:5rem; font-family:Impact; color:white;">00</div>' +
+                '<button id="' + btnId + '" class="btn-rest" style="max-width:280px; margin:0 auto;" onclick="iniciarTabataBloque(\'' + btnId + '\',\'' + statusId + '\',\'' + ejId + '\',\'' + infoId + '\',\'' + timerId + '\',' + JSON.stringify(tc) + ',' + JSON.stringify(rutina) + ')">INICIAR TABATA</button>' +
+                // FIX: boton de pausa en Tabata Mix
+                '<button id="' + pausaId + '" class="btn-pausa" style="max-width:280px; margin:8px auto 0; display:none;" onclick="togglePausaTabataMix(\'' + pausaId + '\',\'' + btnId + '\')">⏸ PAUSAR</button>' +
+                '</div></div>';
+            return html;
+        }
+
+        function renderEmomMixInline(rutina, ec, repsDict, uid) {
+            const statusId = uid + "-status",
+                roundId = uid + "-round";
+            const clockId = uid + "-clock",
+                btnId = uid + "-btn";
+            let html = '<div class="mix-seccion" style="border-color:var(--amarillo);">' +
+                '<div class="mix-seccion-titulo" style="color:var(--amarillo);">EMOM — ' + ec.minutos_totales + ' min | ' + ec.ejercicios_por_minuto + ' ej/min</div>';
+            rutina.forEach(function(ej, i) {
+                const n = Array.isArray(ej) ? ej[0] : (ej.nombre || ej);
+                const l = Array.isArray(ej) ? ej[1] : (ej.link || "");
+                const reps = repsDict[n] || "";
+                html += crearCard(n, l, reps ? reps + " REPS" : "EMOM");
+            });
+            html += '<div style="background:#0f172a; border-radius:12px; padding:16px; margin-top:12px; text-align:center;">' +
+                '<div id="' + statusId + '" style="font-size:1.2rem; font-weight:900; color:var(--amarillo);">LISTO PARA EMOM</div>' +
+                '<div id="' + roundId + '" style="font-size:0.9rem; color:var(--amarillo);"></div>' +
+                '<div id="' + clockId + '" style="font-size:5rem; font-family:Impact; color:white;">60</div>' +
+                '<button id="' + btnId + '" class="btn-rest" style="max-width:280px; margin:0 auto; background:var(--amarillo); color:#000;" onclick="iniciarEmomBloque(\'' + btnId + '\',\'' + statusId + '\',\'' + roundId + '\',\'' + clockId + '\',' + ec.minutos_totales + ')">INICIAR EMOM</button>' +
+                '</div></div>';
+            return html;
+        }
+
+        function renderSeriesMixInline(pLista, seriesData, offset) {
+            let html = '<div class="mix-seccion" style="border-color:#27ae60;"><div class="mix-seccion-titulo" style="color:#27ae60;">SERIES Y REPETICIONES</div>';
+            seriesData.forEach(function(ej, i) {
+                const pausa = calcularPausa(ej.reps);
+                const idx = offset + i;
+                seriesRestantes[idx] = parseInt(ej.series);
+                html += '<div class="serie-card"><div style="display:flex; justify-content:space-between; align-items:center;"><b>' + ej.nombre + '</b><a href="' + ej.link + '" target="_blank" class="btn-youtube">VIDEO</a></div>' +
+                    '<div class="serie-meta"><div>SERIES: <b id="s-val-' + idx + '">' + ej.series + '</b></div><div>REPS: <b>' + ej.reps + '</b></div><div>DESC: <b style="color:var(--naranja)">' + pausa + 's</b></div></div>' +
+                    '<div style="text-align:center; margin-top:15px;"><div class="timer-display" id="timer-' + idx + '">' + pausa + '</div><button class="btn-rest" id="btn-' + idx + '" onclick="marcarSerie(' + idx + ',' + pausa + ')">MARCAR SERIE</button></div></div>';
+            });
+            html += '</div>';
+            pLista.innerHTML += html;
+        }
+
+        // ─── HELPERS ───
+        function crearCard(n, l, r) {
+            return '<div class="card-ejercicio"><div><b>' + n + '</b><br><small style="color:var(--amarillo)">' + r + '</small></div>' +
+                (l ? '<a href="' + l + '" target="_blank" class="btn-youtube">VIDEO</a>' : '') +
+                '</div>';
+        }
+
+        function crearCardNumero(num, total, n, l) {
+            return '<div class="card-ejercicio"><div><div style="color:var(--purpura); font-size:0.8rem; font-weight:900;">EJ ' + num + ' / ' + total + '</div><b>' + n + '</b></div>' +
+                (l ? '<a href="' + l + '" target="_blank" class="btn-youtube">VIDEO</a>' : '') +
+                '</div>';
+        }
+
+        // ─── SERIES TIMER ───
+        function marcarSerie(idx, time) {
+            if (seriesRestantes[idx] <= 0) return;
+            seriesRestantes[idx]--;
+            document.getElementById("s-val-" + idx).innerText = seriesRestantes[idx];
+            const btn = document.getElementById("btn-" + idx);
+            const clock = document.getElementById("timer-" + idx);
+            btn.disabled = true;
+            btn.classList.add('active');
+            btn.innerText = "DESCANSO...";
+            clock.style.display = "block";
+            let rem = time;
+            clock.innerText = rem;
+            restIntervals[idx] = setInterval(function() {
+                rem--;
+                clock.innerText = rem;
+                if (rem <= 3 && rem > 0) beep(400);
+                if (rem <= 0) {
+                    clearInterval(restIntervals[idx]);
+                    beep(800);
+                    btn.disabled = false;
+                    btn.classList.remove('active');
+                    btn.innerText = seriesRestantes[idx] > 0 ? "MARCAR SERIE" : "COMPLETADO!";
+                    clock.style.display = "none";
+                }
+            }, 1000);
+        }
+
+        // ─── DESCANSO CIRCUITO ───
+        function iniciarDescansoCircuito(duracion) {
+            const dur = duracion || 60;
+            const overlay = document.getElementById('overlay-descanso');
+            const clock = document.getElementById('descanso-clock');
+            overlay.style.display = "flex";
+            clearInterval(dInterval);
+            let rem = dur;
+            clock.innerText = rem;
+            dInterval = setInterval(function() {
+                rem--;
+                clock.innerText = rem;
+                if (rem <= 3 && rem > 0) beep(400);
+                if (rem <= 0) cerrarDescansoCircuito();
+            }, 1000);
+        }
+
+        function cerrarDescansoCircuito() {
+            clearInterval(dInterval);
+            beep(800);
+            document.getElementById('overlay-descanso').style.display = "none";
+        }
+
+        // ─── TIMER PRINCIPAL (Tabata / Circuito Tiempo) con PAUSA ───
+        function togglePausaTimer() {
+            timerPausado = !timerPausado;
+            const btn = document.getElementById('btnPausaTimer');
+            if (timerPausado) {
+                clearInterval(tInterval);
+                if (btn) btn.innerText = "▶ REANUDAR";
             } else {
-                tiempoRestante--;
+                if (btn) btn.innerText = "⏸ PAUSAR";
+                tInterval = setInterval(function() {
+                    if (tSegs <= 3 && tSegs > 0) beep(400);
+                    if (tSegs <= 0) {
+                        beep(800);
+                        siguienteFase();
+                    } else tSegs--;
+                    actualizarUITimer();
+                }, 1000);
             }
-            actualizarReloj();
         }
 
-        function cambiarFase() {
-            const container = document.getElementById('timer-container');
-            if (fase === "preparacion") {
-                fase = "trabajo";
-                tiempoRestante = configTabata.trabajo;
-                container.style.borderColor = "var(--verde)";
-                document.getElementById('timer-status').innerText = "¡DALE!";
-                document.getElementById('timer-status').style.color = "var(--verde)";
-                document.getElementById('timer-ejercicio').innerText = rutinaActual[0][0];
-            } else if (fase === "trabajo") {
-                fase = "pausa";
-                tiempoRestante = configTabata.pausa;
-                container.style.borderColor = "var(--rojo)";
-                document.getElementById('timer-status').innerText = "DESCANSO";
-                document.getElementById('timer-status').style.color = "var(--rojo)";
-            } else if (fase === "pausa") {
-                fase = "trabajo";
-                tiempoRestante = configTabata.trabajo;
-                indiceEjercicio++;
-                if (indiceEjercicio >= rutinaActual.length) {
-                    indiceEjercicio = 0;
-                    rondaActual++;
+        function iniciarCronometroTiempo() {
+            // Para MIX con bloque Tabata: cargar config del bloque si aun no esta cargado
+            if (dataGlobal && dataGlobal.tipo === "MIX") {
+                var bloques = dataGlobal.bloques || [];
+                var blqTabata = null;
+                for (var _bi = 0; _bi < bloques.length; _bi++) {
+                    if (bloques[_bi].tipo === "Tabata") {
+                        blqTabata = bloques[_bi];
+                        break;
+                    }
                 }
-                if (rondaActual > configTabata.rondas) {
-                    clearInterval(timerInterval);
-                    document.getElementById('timer-status').innerText = "¡TERMINADO!";
-                    document.getElementById('timer-ejercicio').innerText = "Excelente entrenamiento";
+                if (blqTabata && !dataGlobal.config) {
+                    dataGlobal.config = {
+                        trabajo: blqTabata.trabajo || 20,
+                        pausa: blqTabata.pausa || 10,
+                        rondas: blqTabata.rondas || 1,
+                        cantidad: blqTabata.cantidad || 8,
+                        pausa_entre_rondas: blqTabata.pausa_entre_rondas || 0
+                    };
+                    dataGlobal.rutina = blqTabata.rutina || [];
+                }
+            }
+            document.getElementById('btnStartTimer').style.display = "none";
+            const btnPausa = document.getElementById('btnPausaTimer');
+            if (btnPausa) {
+                btnPausa.style.display = "block";
+                btnPausa.innerText = "⏸ PAUSAR";
+            }
+            document.getElementById('next-ej-container').style.display = "block";
+            tSegs = 5;
+            tFase = "prep";
+            tIdx = 0;
+            tRonda = 1;
+            timerPausado = false;
+            timerActivo = true;
+            clearInterval(tInterval);
+            tInterval = setInterval(function() {
+                if (tSegs <= 3 && tSegs > 0) beep(400);
+                if (tSegs <= 0) {
+                    beep(800);
+                    siguienteFase();
+                } else tSegs--;
+                actualizarUITimer();
+            }, 1000);
+        }
+
+        // ─── ACTIVAR BLOQUE TABATA MIX EN INTERFAZ UNIFICADA #sec-timer-ui ───
+        function activarTabataMixEnUI(tc, rutina, uid) {
+            // Cambio de pantalla: ocultar lista de rutina y mostrar timer UI
+            var secLista = document.getElementById('sec-rutina-lista');
+            if (secLista) secLista.style.display = 'none';
+            document.getElementById('sec-timer-ui').style.display = 'block';
+
+            // Cargar config del bloque Tabata mix en dataGlobal para usar la UI unificada
+            dataGlobal.config = {
+                trabajo: tc.trabajo || 20,
+                pausa: tc.pausa || 10,
+                rondas: tc.rondas || 1,
+                cantidad: tc.cantidad || 8,
+                pausa_entre_rondas: tc.pausa_entre_rondas || 0
+            };
+            dataGlobal.rutina = rutina;
+
+            // Mostrar y configurar el #sec-timer-ui
+            const secUI = document.getElementById('sec-timer-ui');
+            secUI.style.display = "block";
+
+            // Scroll hacia el timer
+            secUI.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+
+            // Actualizar labels del timer
+            document.getElementById('t-status').innerText = "TABATA — " + tc.rondas + " RONDA(S)";
+            document.getElementById('t-status').style.color = "var(--naranja)";
+            document.getElementById('t-ejercicio-nombre').innerText = "";
+            document.getElementById('t-ej-restantes').innerText = "";
+            document.getElementById('t-ejercicio').innerText = "Preparate para el bloque Tabata";
+            document.getElementById('clock').innerText = "05";
+            document.getElementById('clock').style.color = "var(--verde)";
+            document.getElementById('next-ej-container').style.display = "none";
+
+            // Mostrar boton de inicio y pausa
+            const btnStart = document.getElementById('btnStartTimer');
+            if (btnStart) {
+                btnStart.style.display = "block";
+                btnStart.innerText = "EMPEZAR TABATA";
+            }
+            const btnPausa = document.getElementById('btnPausaTimer');
+            if (btnPausa) {
+                btnPausa.style.display = "none";
+                btnPausa.innerText = "⏸ PAUSAR";
+            }
+
+            // Resetear estado del timer
+            clearInterval(tInterval);
+            tSegs = 5;
+            tFase = "prep";
+            tIdx = 0;
+            tRonda = 1;
+            timerPausado = false;
+            timerActivo = false;
+        }
+
+        function siguienteFase() {
+            const config = dataGlobal.config || {
+                trabajo: 30,
+                pausa: 15,
+                rondas: 3,
+                pausa_entre_rondas: 0
+            };
+            const lista = dataGlobal.rutina || dataGlobal.datos || [];
+            const pausaEntreRondas = config.pausa_entre_rondas || 0;
+            if (tFase === "prep") {
+                tFase = "work";
+                tSegs = config.trabajo;
+            } else if (tFase === "work") {
+                if (config.pausa && config.pausa > 0) {
+                    tFase = "rest";
+                    tSegs = config.pausa;
+                } else {
+                    // Circuito por Tiempo sin pausa: ir al siguiente ejercicio directamente
+                    tIdx++;
+                    if (tIdx >= lista.length) {
+                        tIdx = 0;
+                        tRonda++;
+                    }
+                    if (tRonda > config.rondas) {
+                        clearInterval(tInterval);
+                        timerActivo = false;
+                        document.getElementById('t-status').innerText = (dataGlobal && (dataGlobal.tipo === "Tabata" || (dataGlobal.config && dataGlobal.config.pausa > 0))) ? "TABATA REALIZADO CON EXITO" : "COMPLETO!";
+                        document.getElementById('t-status').style.color = "var(--amarillo)";
+                        document.getElementById('t-ejercicio-nombre').innerText = "Excelente trabajo!";
+                        document.getElementById('t-ej-restantes').innerText = "";
+                        document.getElementById('next-ej-container').style.display = "none";
+                        const btnPausa2 = document.getElementById('btnPausaTimer');
+                        if (btnPausa2) btnPausa2.style.display = "none";
+                        // Si estamos en Modo Mix, volver automaticamente a la lista
+                        if (dataGlobal && dataGlobal.tipo === "MIX") {
+                            setTimeout(function() {
+                                salirDelTimer();
+                            }, 2500);
+                        }
+                        return;
+                    }
+                    tFase = "work";
+                    tSegs = config.trabajo;
+                }
+            } else {
+                tIdx++;
+                if (tIdx >= lista.length) {
+                    tIdx = 0;
+                    tRonda++;
+                    if (pausaEntreRondas > 0 && tRonda <= config.rondas) {
+                        clearInterval(tInterval);
+                        mostrarPausaRonda(pausaEntreRondas, tRonda, config.rondas, function() {
+                            tInterval = setInterval(function() {
+                                if (tSegs <= 3 && tSegs > 0) beep(400);
+                                if (tSegs <= 0) {
+                                    beep(800);
+                                    siguienteFase();
+                                } else tSegs--;
+                                actualizarUITimer();
+                            }, 1000);
+                        });
+                        return;
+                    }
+                }
+                if (tRonda > config.rondas) {
+                    clearInterval(tInterval);
+                    timerActivo = false;
+                    document.getElementById('t-status').innerText = (dataGlobal && (dataGlobal.tipo === "Tabata" || (dataGlobal.config && dataGlobal.config.pausa > 0))) ? "TABATA REALIZADO CON EXITO" : "COMPLETO!";
+                    document.getElementById('t-status').style.color = "var(--amarillo)";
+                    document.getElementById('t-ejercicio-nombre').innerText = "Excelente trabajo!";
+                    document.getElementById('t-ej-restantes').innerText = "";
+                    document.getElementById('next-ej-container').style.display = "none";
+                    const btnPausa = document.getElementById('btnPausaTimer');
+                    if (btnPausa) btnPausa.style.display = "none";
+                    // Si estamos en Modo Mix, volver automaticamente a la lista
+                    if (dataGlobal && dataGlobal.tipo === "MIX") {
+                        setTimeout(function() {
+                            salirDelTimer();
+                        }, 2500);
+                    }
                     return;
                 }
-                container.style.borderColor = "var(--verde)";
-                document.getElementById('timer-status').innerText = "¡DALE!";
-                document.getElementById('timer-status').style.color = "var(--verde)";
-                document.getElementById('timer-ejercicio').innerText = rutinaActual[indiceEjercicio][0];
+                tFase = "work";
+                tSegs = config.trabajo;
             }
         }
 
-        function actualizarReloj() {
-            document.getElementById('timer-clock').innerText = tiempoRestante < 10 ? "0" + tiempoRestante : tiempoRestante;
+        function mostrarPausaRonda(duracion, siguienteRonda, totalRondas, callback) {
+            tPausaRondaResolve = callback;
+            document.getElementById('pausa-ronda-info').innerText = "Siguiente: RONDA " + siguienteRonda + " de " + totalRondas;
+            document.getElementById('overlay-pausa-ronda').style.display = "flex";
+            clearInterval(pausaRondaInterval);
+            let rem = duracion;
+            document.getElementById('pausa-ronda-clock').innerText = rem;
+            pausaRondaInterval = setInterval(function() {
+                rem--;
+                document.getElementById('pausa-ronda-clock').innerText = rem;
+                if (rem <= 3 && rem > 0) beep(400);
+                if (rem <= 0) salterPausaRonda();
+            }, 1000);
         }
 
-        function resetTimer() {
-            clearInterval(timerInterval);
-            tiempoRestante = 5;
-            fase = "preparacion";
-            indiceEjercicio = 0;
-            rondaActual = 1;
-            document.getElementById('btnPlay').style.display = "block";
-            document.getElementById('timer-clock').innerText = "05";
-            document.getElementById('timer-status').innerText = "¿LISTO?";
-            document.getElementById('timer-status').style.color = "var(--verde)";
-            document.getElementById('timer-ejercicio').innerText = "Prepárate para iniciar";
-            document.getElementById('timer-container').style.borderColor = "var(--verde)";
+        function salterPausaRonda() {
+            clearInterval(pausaRondaInterval);
+            beep(800);
+            document.getElementById('overlay-pausa-ronda').style.display = "none";
+            if (tPausaRondaResolve) {
+                const cb = tPausaRondaResolve;
+                tPausaRondaResolve = null;
+                cb();
+            }
         }
 
-        function cerrarModal() {
-            resetTimer();
+        function actualizarUITimer() {
+            const clock = document.getElementById('clock');
+            const status = document.getElementById('t-status');
+            const ejNombre = document.getElementById('t-ejercicio-nombre');
+            const ejRest = document.getElementById('t-ej-restantes');
+            const ej = document.getElementById('t-ejercicio');
+            const next = document.getElementById('next-ej-name');
+            const lista = dataGlobal.rutina || dataGlobal.datos || [];
+            const config = dataGlobal.config || {
+                trabajo: 30,
+                pausa: 15,
+                rondas: 3,
+                pausa_entre_rondas: 0
+            };
+            const totalEjs = lista.length;
+            clock.innerText = tSegs < 10 ? "0" + tSegs : tSegs;
+            if (tFase === "prep") {
+                status.innerText = "PREPARATE!";
+                status.style.color = "var(--amarillo)";
+                clock.style.color = "var(--amarillo)";
+                ejNombre.innerText = "";
+                ejRest.innerText = "";
+                ej.innerText = "Preparate para el primer ejercicio";
+            } else if (tFase === "work") {
+                status.innerText = "RONDA " + tRonda + " / " + config.rondas + " — TRABAJO";
+                status.style.color = "var(--verde)";
+                clock.style.color = "var(--verde)";
+                const item = lista[tIdx % totalEjs];
+                // FIX: soportar array [nombre, link] y objeto {nombre, link}
+                const nombre = Array.isArray(item) ? item[0] : (item.nombre || item.ejercicio || "");
+                ejNombre.innerText = nombre;
+                const ejsRestantes = totalEjs - (tIdx % totalEjs) - 1;
+                ejRest.innerText = ejsRestantes > 0 ? "Quedan " + ejsRestantes + " ejercicio(s) en esta ronda" : "Ultimo ejercicio de la ronda";
+                ej.innerText = "Ejercicio " + ((tIdx % totalEjs) + 1) + " de " + totalEjs;
+            } else if (tFase === "rest") {
+                status.innerText = "DESCANSO";
+                status.style.color = "var(--rojo)";
+                clock.style.color = "var(--rojo)";
+                ejNombre.innerText = "Respira...";
+                ejRest.innerText = "";
+                ej.innerText = "";
+                let ni = tIdx + 1,
+                    nr = tRonda;
+                if (ni >= totalEjs) {
+                    ni = 0;
+                    nr++;
+                }
+                if (nr <= config.rondas) {
+                    const nItem = lista[ni % totalEjs];
+                    // FIX: soportar array y objeto
+                    next.innerText = Array.isArray(nItem) ? nItem[0] : (nItem.nombre || nItem.ejercicio || "");
+                    document.getElementById('next-ej-container').style.display = "block";
+                } else {
+                    document.getElementById('next-ej-container').style.display = "none";
+                }
+            }
+        }
+
+        // ─── EMOM STANDALONE ───
+        function iniciarEmom() {
+            if (emomRunning) return;
+            emomRunning = true;
+            document.getElementById('btnStartEmom').style.display = "none";
+            const minutos = dataGlobal.minutos_totales || 10;
+            emomMinActual = 0;
+            correrEmomMin(minutos);
+        }
+
+        function correrEmomMin(totalMin) {
+            if (emomMinActual >= totalMin) {
+                document.getElementById('emom-status').innerText = "EMOM COMPLETO!";
+                document.getElementById('emom-status').style.color = "var(--amarillo)";
+                document.getElementById('emom-minuto').innerText = "Excelente trabajo!";
+                emomRunning = false;
+                return;
+            }
+            document.getElementById('emom-status').innerText = "TRABAJA!";
+            document.getElementById('emom-status').style.color = "var(--verde)";
+            document.getElementById('emom-minuto').innerText = "Minuto " + (emomMinActual + 1) + " de " + totalMin;
+            let rem = 60;
+            document.getElementById('emom-clock').innerText = rem;
+            clearInterval(emomInterval);
+            emomInterval = setInterval(function() {
+                rem--;
+                document.getElementById('emom-clock').innerText = rem;
+                if (rem <= 3 && rem > 0) beep(400);
+                if (rem <= 0) {
+                    clearInterval(emomInterval);
+                    beep(800);
+                    emomMinActual++;
+                    correrEmomMin(totalMin);
+                }
+            }, 1000);
+        }
+
+        // ─── BLOQUE TIEMPO ───
+        function iniciarBloqueTiempo(timerId, btnId, totalSec) {
+            const btn = document.getElementById(btnId),
+                timerEl = document.getElementById(timerId);
+            if (bloqueTiempoIntervals[btnId]) return;
+            btn.disabled = true;
+            btn.innerText = "EN CURSO...";
+            let rem = totalSec;
+            bloqueTiempoIntervals[btnId] = setInterval(function() {
+                rem--;
+                const m = Math.floor(rem / 60),
+                    s = rem % 60;
+                timerEl.innerText = (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+                if (rem <= 0) {
+                    clearInterval(bloqueTiempoIntervals[btnId]);
+                    delete bloqueTiempoIntervals[btnId];
+                    beep(800);
+                    timerEl.innerText = "TIEMPO!";
+                    btn.disabled = false;
+                    btn.innerText = "REINICIAR BLOQUE";
+                }
+            }, 1000);
+        }
+
+        // FIX: Bloque tiempo con pausa y descuento de vuelta al completar
+        const bloquePausados = {};
+
+        function iniciarBloqueTiempoConDescuento(timerId, btnId, totalSec) {
+            const btn = document.getElementById(btnId),
+                timerEl = document.getElementById(timerId);
+            if (bloqueTiempoIntervals[btnId]) {
+                // Si ya corre, actuar como PAUSA
+                if (!bloquePausados[btnId]) {
+                    bloquePausados[btnId] = true;
+                    clearInterval(bloqueTiempoIntervals[btnId]);
+                    bloqueTiempoIntervals[btnId] = null;
+                    btn.innerText = "▶ REANUDAR";
+                    btn.style.background = "#8e44ad";
+                } else {
+                    // Reanudar
+                    bloquePausados[btnId] = false;
+                    btn.innerText = "⏸ PAUSAR";
+                    btn.style.background = "#7f8c8d";
+                    _correrBloqueTiempo(timerId, btnId, bloqueTiempoIntervals['rem_' + btnId] || 0);
+                }
+                return;
+            }
+            bloquePausados[btnId] = false;
+            btn.style.background = "#7f8c8d";
+            btn.innerText = "⏸ PAUSAR";
+            _correrBloqueTiempo(timerId, btnId, totalSec);
+        }
+
+        function _correrBloqueTiempo(timerId, btnId, totalSec) {
+            const btn = document.getElementById(btnId),
+                timerEl = document.getElementById(timerId);
+            let rem = totalSec;
+            bloqueTiempoIntervals[btnId] = setInterval(function() {
+                rem--;
+                bloqueTiempoIntervals['rem_' + btnId] = rem;
+                const m = Math.floor(rem / 60),
+                    s = rem % 60;
+                timerEl.innerText = (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+                if (rem <= 0) {
+                    clearInterval(bloqueTiempoIntervals[btnId]);
+                    delete bloqueTiempoIntervals[btnId];
+                    delete bloqueTiempoIntervals['rem_' + btnId];
+                    beep(800);
+                    timerEl.innerText = "TIEMPO!";
+                    btn.disabled = false;
+                    btn.style.background = "#27ae60";
+                    btn.innerText = "REINICIAR BLOQUE";
+                }
+            }, 1000);
+        }
+
+        // ─── TABATA BLOQUE MIX con PAUSA ───
+        const tabataMixPausados = {};
+        const tabataMixCallbacks = {};
+
+        function togglePausaTabataMix(pausaId, btnId) {
+            const btn = document.getElementById(pausaId);
+            if (!tabataMixPausados[btnId]) {
+                tabataMixPausados[btnId] = true;
+                if (btn) btn.innerText = "▶ REANUDAR";
+            } else {
+                tabataMixPausados[btnId] = false;
+                if (btn) btn.innerText = "⏸ PAUSAR";
+            }
+        }
+
+        function iniciarTabataBloque(btnId, statusId, ejId, infoId, timerId, tc, rutina) {
+            const btn = document.getElementById(btnId);
+            if (btn.dataset.running === "1") return;
+            btn.dataset.running = "1";
+            btn.disabled = true;
+            btn.innerText = "EN CURSO...";
+
+            // FIX: mostrar boton de pausa
+            const pausaBtn = document.getElementById(btnId.replace('-btn', '-pausa'));
+            if (pausaBtn) pausaBtn.style.display = "block";
+            tabataMixPausados[btnId] = false;
+
+            const totalEjs = rutina.length;
+            const totalRondas = tc.rondas || 1;
+            const pausaR = tc.pausa_entre_rondas || 0;
+            const cant = tc.cantidad || 8;
+            let r = 0,
+                ejIdx = 0;
+
+            function countdownMix(segundos, timerId, callback) {
+                let rem = segundos;
+                document.getElementById(timerId).innerText = rem < 10 ? "0" + rem : rem;
+                const iv = setInterval(function() {
+                    // Soporte de pausa
+                    if (tabataMixPausados[btnId]) return;
+                    rem--;
+                    document.getElementById(timerId).innerText = rem < 10 ? "0" + rem : rem;
+                    if (rem <= 0) {
+                        clearInterval(iv);
+                        beep(800);
+                        callback();
+                    }
+                }, 1000);
+            }
+
+            function siguiente() {
+                if (r >= totalRondas) {
+                    document.getElementById(statusId).innerText = "TABATA COMPLETO!";
+                    document.getElementById(statusId).style.color = "var(--amarillo)";
+                    document.getElementById(ejId).innerText = "";
+                    btn.dataset.running = "0";
+                    btn.disabled = false;
+                    btn.innerText = "REINICIAR";
+                    if (pausaBtn) pausaBtn.style.display = "none";
+                    return;
+                }
+                if (ejIdx >= cant) {
+                    ejIdx = 0;
+                    r++;
+                    if (pausaR > 0 && r < totalRondas) {
+                        document.getElementById(statusId).innerText = "PAUSA ENTRE RONDAS";
+                        document.getElementById(statusId).style.color = "var(--purpura)";
+                        countdownMix(pausaR, timerId, siguiente);
+                        return;
+                    }
+                    siguiente();
+                    return;
+                }
+                const item = rutina[ejIdx % totalEjs];
+                // FIX: nombre desde array o objeto
+                const nombre = Array.isArray(item) ? item[0] : (item.nombre || item);
+                document.getElementById(statusId).innerText = "RONDA " + (r + 1) + "/" + totalRondas + " — TRABAJO";
+                document.getElementById(statusId).style.color = "var(--verde)";
+                document.getElementById(ejId).innerText = nombre;
+                document.getElementById(infoId).innerText = "Ej " + ((ejIdx % totalEjs) + 1) + "/" + totalEjs + " — Serie " + (ejIdx + 1) + "/" + cant;
+                countdownMix(tc.trabajo || 20, timerId, function() {
+                    document.getElementById(statusId).innerText = "DESCANSO";
+                    document.getElementById(statusId).style.color = "var(--rojo)";
+                    document.getElementById(ejId).innerText = "Respira...";
+                    countdownMix(tc.pausa || 10, timerId, function() {
+                        ejIdx++;
+                        siguiente();
+                    });
+                });
+            }
+            siguiente();
+        }
+
+        // ─── EMOM BLOQUE MIX ───
+        function iniciarEmomBloque(btnId, statusId, roundId, clockId, totalMin) {
+            const btn = document.getElementById(btnId);
+            if (btn.dataset.running === "1") return;
+            btn.dataset.running = "1";
+            btn.disabled = true;
+            btn.innerText = "EN CURSO...";
+            let minActual = 0;
+
+            function sig() {
+                if (minActual >= totalMin) {
+                    document.getElementById(statusId).innerText = "EMOM COMPLETO!";
+                    document.getElementById(roundId).innerText = "";
+                    btn.dataset.running = "0";
+                    btn.disabled = false;
+                    btn.innerText = "REINICIAR";
+                    return;
+                }
+                document.getElementById(statusId).innerText = "TRABAJA!";
+                document.getElementById(statusId).style.color = "var(--verde)";
+                document.getElementById(roundId).innerText = "Minuto " + (minActual + 1) + " de " + totalMin;
+                let rem = 60;
+                document.getElementById(clockId).innerText = rem;
+                const iv = setInterval(function() {
+                    rem--;
+                    document.getElementById(clockId).innerText = rem;
+                    if (rem <= 3 && rem > 0) beep(400);
+                    if (rem <= 0) {
+                        clearInterval(iv);
+                        beep(800);
+                        minActual++;
+                        sig();
+                    }
+                }, 1000);
+            }
+            sig();
+        }
+
+        // ─── INICIO POR INDICE DE BLOQUE MIX ───
+        // iniciarTabataMixEnUI(i): lee bloquesMix[i] y activa la UI unificada de Tabata
+        function iniciarTabataMixEnUI(i) {
+            var bloque = bloquesMix[i];
+            if (!bloque) {
+                console.error('bloquesMix[' + i + '] no encontrado');
+                return;
+            }
+            var tc = {
+                trabajo: bloque.trabajo || 20,
+                pausa: bloque.pausa || 10,
+                rondas: bloque.rondas || 1,
+                cantidad: bloque.cantidad || 8,
+                pausa_entre_rondas: bloque.pausa_entre_rondas || 0
+            };
+            var rutina = bloque.rutina || [];
+            var uid = 'blq-' + (i + 1);
+            activarTabataMixEnUI(tc, rutina, uid);
+        }
+
+        // iniciarEmomMix(i, btnId, statusId, roundId, clockId): lee bloquesMix[i] y corre el timer EMOM
+        function iniciarEmomMix(i, btnId, statusId, roundId, clockId) {
+            var bloque = bloquesMix[i];
+            if (!bloque) {
+                console.error('bloquesMix[' + i + '] no encontrado');
+                return;
+            }
+            var totalMin = bloque.minutos_totales || 10;
+            iniciarEmomBloque(btnId, statusId, roundId, clockId, totalMin);
+        }
+
+        // ─── SALIR DEL TIMER (Volver a Rutina Mix) ───
+        function salirDelTimer() {
+            clearInterval(tInterval);
+            clearInterval(pausaRondaInterval);
+            timerActivo = false;
+            timerPausado = false;
+            // Cerrar overlay de pausa de ronda si estuviera visible
+            document.getElementById('overlay-pausa-ronda').style.display = 'none';
+            // Ocultar el timer y volver a mostrar la lista de rutina
+            document.getElementById('sec-timer-ui').style.display = 'none';
+            var secLista = document.getElementById('sec-rutina-lista');
+            if (secLista) secLista.style.display = 'block';
+            // Hacer scroll al principio de la lista
+            if (secLista) secLista.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        function cerrar() {
+            // Restaurar visibilidad de la lista de rutina
+            var secLista = document.getElementById('sec-rutina-lista');
+            if (secLista) secLista.style.display = 'block';
+            clearInterval(tInterval);
+            clearInterval(dInterval);
+            clearInterval(emomInterval);
+            clearInterval(pausaRondaInterval);
+            clearInterval(warmupTabInterval);
+            clearInterval(warmupEmomInterval);
+            Object.values(restIntervals).forEach(clearInterval);
+            Object.values(bloqueTiempoIntervals).forEach(function(v) {
+                if (typeof v === 'number') clearInterval(v);
+            });
             document.getElementById('rutina-modal').style.display = "none";
-        }
-
-        function crearTarjeta(n, l, r) {
-            return `
-            <div class="card">
-                <div class="card-info">
-                    <b>${n}</b>
-                    <span>${r}</span>
-                </div>
-                <a href="${l}" target="_blank" class="btn-video">📺 VIDEO</a>
-            </div>
-        `;
+            document.getElementById('overlay-descanso').style.display = "none";
+            document.getElementById('overlay-pausa-ronda').style.display = "none";
+            emomRunning = false;
+            warmupRunning = false;
+            timerPausado = false;
+            timerActivo = false;
+            restIntervals = {};
+            bloqueTiempoIntervals = {};
+            seriesRestantes = {};
+            circVueltasRestantes = 0;
         }
     </script>
 </body>
