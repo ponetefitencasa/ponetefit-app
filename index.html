@@ -1169,7 +1169,7 @@
                 vCounter.innerText = 'Vueltas restantes: ' + vRestantes;
                 tBox.insertBefore(vCounter, tBtn);
 
-                tBtn.innerText = "Vuelta Completada";
+                tBtn.innerText = "ACTIVAR PAUSA";
                 tBtn.style.background = "linear-gradient(135deg,var(--naranja),#d35400)";
                 tBtn.onclick = function() {
                     if (vRestantes <= 0) return;
@@ -1535,7 +1535,7 @@
             });
 
             pLista.innerHTML += '<div style="margin-top:16px;">' +
-                '<button id="circ-btn-vuelta" class="btn-rest" onclick="marcarVueltaCircuito(' + pausaVuelta + ',\'' + vContId + '\',' + vBloque + ')">Vuelta Completada</button></div>';
+                '<button id="circ-btn-vuelta" class="btn-rest" onclick="marcarVueltaCircuito(' + pausaVuelta + ',\'' + vContId + '\',' + vBloque + ')">ACTIVAR PAUSA</button></div>';
         }
 
         let circVueltasRestantes = 0;
@@ -1692,7 +1692,7 @@
                     });
                 });
                 html += '<div id="mix-old-circ-vcount" style="color:var(--amarillo); font-weight:900; text-align:center; margin:12px 0;">Vueltas restantes: ' + vueltas + '</div>';
-                if (pausaV > 0) html += '<button class="btn-rest" onclick="marcarVueltaMixOld(\'mix-old-circ-vcount\',' + pausaV + ',' + vueltas + ')">Vuelta Completada</button>';
+                if (pausaV > 0) html += '<button class="btn-rest" onclick="marcarVueltaMixOld(\'mix-old-circ-vcount\',' + pausaV + ',' + vueltas + ')">ACTIVAR PAUSA</button>';
                 html += '</div>';
                 pLista.innerHTML += html;
             }
@@ -1778,7 +1778,7 @@
                     });
                 });
                 html += '<button id="' + uid + '-btn-vuelta" class="btn-rest" style="margin-top:12px;" ' +
-                    'onclick="marcarVueltaMixBloque(\'' + uid + '\',\'' + vContId + '\',' + pausaV + ',' + vueltas + ')">Vuelta Completada</button></div>';
+                    'onclick="marcarVueltaMixBloque(\'' + uid + '\',\'' + vContId + '\',' + pausaV + ',' + vueltas + ')">ACTIVAR PAUSA</button></div>';
                 pLista.innerHTML += html;
 
             } else if (tipo === "Circuito por Tiempo") {
