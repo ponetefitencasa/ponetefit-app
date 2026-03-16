@@ -781,6 +781,29 @@
             font-size: 0.8rem;
             color: var(--texto-suave);
         }
+        
+        .bloque-descripcion {
+            background: var(--fondo-alt);
+            border-left: 3px solid var(--verde);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            font-size: 0.85rem;
+            color: var(--texto-suave);
+            font-style: italic;
+            line-height: 1.5;
+        }
+        
+        .nota-tecnica {
+            font-size: 0.78rem;
+            color: var(--texto-suave);
+            font-style: italic;
+            background: var(--fondo-alt);
+            border-left: 3px solid var(--naranja);
+            border-radius: 6px;
+            padding: 6px 10px;
+            margin-top: 8px;
+        }
         /* ─── SCROLL CONTAINER ─── */
         
         .container-scroll::-webkit-scrollbar {
@@ -1041,6 +1064,12 @@
                 }
                 dataGlobal = data;
                 currentCode = cod;
+                // Titulo dinamico para codigos con formato nombre-000X
+                if (cod.includes('-')) {
+                    const partes = cod.split('-');
+                    const nombre = partes[0].charAt(0).toUpperCase() + partes[0].slice(1);
+                    document.title = 'PONETEFIT | Entrenamiento para ' + nombre;
+                }
                 document.getElementById('id-display').innerText = cod.toUpperCase();
                 document.getElementById('tipo-tag').innerText = data.tipo.toUpperCase();
                 render(data);
@@ -1482,7 +1511,7 @@
             else if (data.tipo === "Tabata") renderTabata(data, pTitulo, pLista, ejerciciosPrincipales);
             else if (data.tipo === "Circuito por Tiempo") renderCircuitoTiempo(data, pTitulo, pLista, ejerciciosPrincipales);
             else if (data.tipo === "EMOM") renderEmom(data, pTitulo, pLista);
-            else if (data.tipo === "MIX") renderMix(data, pTitulo, pLista);
+            else if (data.tipo === "ENTRENAMIENTO") renderMix(data, pTitulo, pLista);
             else {
                 pTitulo.innerText = "ENTRENAMIENTO";
                 ejerciciosPrincipales.forEach(function(ej) {
@@ -1496,9 +1525,13 @@
         // ─── MODO SERIES ───
         function renderSeries(data, pTitulo, pLista, ejercicios) {
             pTitulo.innerText = "SERIES";
+            if (data.descripcion) {
+                pLista.innerHTML += '<div class="bloque-descripcion">' + data.descripcion + '</div>';
+            }
             ejercicios.forEach(function(ej, i) {
                 const pausa = calcularPausa(ej.reps);
                 seriesRestantes[i] = parseInt(ej.series);
+                const notaHtml = ej.nota_tecnica ? '<div class="nota-tecnica">📝 ' + ej.nota_tecnica + '</div>' : '';
                 pLista.innerHTML += '<div class="serie-card">' +
                     '<div class="serie-header"><span class="serie-nombre">' + ej.nombre + '</span>' +
                     '<a href="' + ej.link + '" target="_blank" class="btn-play-video">' + svgPlay() + '</a></div>' +
@@ -1507,6 +1540,7 @@
                     '<div class="serie-meta-item"><span class="serie-meta-label">Reps</span><span class="serie-meta-value">' + ej.reps + '</span></div>' +
                     '<div class="serie-meta-item"><span class="serie-meta-label">Descanso</span><span class="serie-meta-value" style="color:var(--naranja)">' + pausa + 's</span></div>' +
                     '</div>' +
+                    notaHtml +
                     '<div style="text-align:center;">' +
                     '<div class="timer-display" id="timer-' + i + '">' + pausa + '</div>' +
                     '<button class="btn-rest" id="btn-' + i + '" onclick="marcarSerie(' + i + ',' + pausa + ')">Marcar Serie</button>' +
@@ -1517,6 +1551,9 @@
         // ─── MODO CIRCUITO ───
         function renderCircuito(data, pTitulo, pLista, ejercicios) {
             pTitulo.innerText = "CIRCUITO";
+            if (data.descripcion) {
+                pLista.innerHTML += '<div class="bloque-descripcion">' + data.descripcion + '</div>';
+            }
             const vBloque = data.vueltas_bloque || 3;
             const pausaVuelta = data.pausa_vuelta || 60;
             let vRestantes = vBloque;
@@ -1560,6 +1597,9 @@
         // ─── MODO CIRCUITO POR TIEMPO ───
         function renderCircuitoTiempo(data, pTitulo, pLista, ejercicios) {
             pTitulo.innerText = "CIRCUITO POR TIEMPO";
+            if (data.descripcion) {
+                pLista.innerHTML += '<div class="bloque-descripcion">' + data.descripcion + '</div>';
+            }
             const tieneBloques = ejercicios.length > 0 && ejercicios[0] && ejercicios[0].ejercicios;
 
             if (tieneBloques) {
@@ -1629,6 +1669,9 @@
             pLista.innerHTML += '<div class="info-block" style="border-color:var(--naranja);">' +
                 '<span class="info-block-titulo" style="color:var(--naranja)">' + config.trabajo + 's TRABAJO / ' + config.pausa + 's DESCANSO</span>' +
                 '<span class="info-block-subtitulo">' + config.rondas + ' RONDA(S)' + (config.cantidad ? ' × ' + config.cantidad + ' SERIES' : '') + (pr > 0 ? ' | Pausa rondas: ' + pr + 's' : '') + '</span></div>';
+            if (data.descripcion) {
+                pLista.innerHTML += '<div class="bloque-descripcion">' + data.descripcion + '</div>';
+            }
 
             ejercicios.forEach(function(ej, i) {
                 const n = Array.isArray(ej) ? ej[0] : (ej.nombre || ej.ejercicio || "");
@@ -1649,6 +1692,9 @@
 
             pLista.innerHTML += '<div class="info-block" style="border-color:var(--amarillo);">' +
                 '<span class="info-block-titulo" style="color:var(--amarillo)">' + minutos + ' MINUTOS — ' + ejsPorMin + ' EJ/MIN</span></div>';
+            if (data.descripcion) {
+                pLista.innerHTML += '<div class="bloque-descripcion">' + data.descripcion + '</div>';
+            }
             rutina.forEach(function(ej, i) {
                 const n = Array.isArray(ej) ? ej[0] : (ej.nombre || ej.ejercicio);
                 const l = Array.isArray(ej) ? ej[1] : (ej.link || "");
@@ -1665,7 +1711,7 @@
         var bloquesMix = [];
 
         function renderMix(data, pTitulo, pLista) {
-            pTitulo.innerText = "MIX";
+            pTitulo.innerText = "ENTRENAMIENTO";
             const bloques = data.bloques || [];
             bloquesMix = bloques;
 
@@ -1736,7 +1782,7 @@
             }
 
             if (data.series && data.series.length > 0 && modos.indexOf("series") !== -1) {
-                renderSeriesMixInline(pLista, data.series, 9000);
+                renderSeriesMixInline(pLista, data.series, 9000, data.descripcion || "");
             }
         }
 
@@ -1771,6 +1817,9 @@
                     '<div class="bloque-mix-titulo" style="color:' + color + ';">BLOQUE ' + idx + ' — CIRCUITO (' + vueltas + ' VUELTAS)</div>' +
                     (pausaV > 0 ? '<div style="color:var(--naranja); font-size:0.8rem; margin-bottom:10px;">Pausa entre vueltas: ' + pausaV + 's</div>' : '') +
                     '<div id="' + vContId + '" style="color:var(--amarillo); font-weight:900; text-align:center; font-size:1.2rem; margin-bottom:12px;">Vueltas restantes: ' + vueltas + '</div>';
+                if (bloque.descripcion) {
+                    html += '<div class="bloque-descripcion">' + bloque.descripcion + '</div>';
+                }
                 (bloque.rutina || []).forEach(function(b) {
                     html += '<div class="circ-bloque-header"><span class="circ-bloque-label">Bloque #' + b.id + '</span></div>';
                     b.ejercicios.forEach(function(ej) {
@@ -1813,6 +1862,9 @@
                     '<div class="info-block" style="border-color:var(--naranja);">' +
                     '<span class="info-block-titulo" style="color:var(--naranja)">' + tc.trabajo + 's / ' + tc.pausa + 's</span>' +
                     '<span class="info-block-subtitulo">' + tc.rondas + ' ronda(s) × ' + tc.cantidad + ' series' + (tc.pausa_entre_rondas > 0 ? ' | Pausa: ' + tc.pausa_entre_rondas + 's' : '') + '</span></div>';
+                if (bloque.descripcion) {
+                    htmlTab += '<div class="bloque-descripcion">' + bloque.descripcion + '</div>';
+                }
                 rutinaTab.forEach(function(ej, i) {
                     const n = Array.isArray(ej) ? ej[0] : (ej.nombre || ej.ejercicio || "");
                     const l = Array.isArray(ej) ? ej[1] : (ej.link || "");
@@ -1835,6 +1887,9 @@
                 const emomBtnId = emomUid + "-btn";
                 let emomHtml = '<div class="bloque-mix" style="border-color:var(--amarillo);">' +
                     '<div class="bloque-mix-titulo" style="color:var(--amarillo);">BLOQUE ' + idx + ' — EMOM — ' + ec.minutos_totales + ' min | ' + ec.ejercicios_por_minuto + ' ej/min</div>';
+                if (bloque.descripcion) {
+                    emomHtml += '<div class="bloque-descripcion">' + bloque.descripcion + '</div>';
+                }
                 (bloque.rutina || []).forEach(function(ej) {
                     const n = Array.isArray(ej) ? ej[0] : (ej.nombre || ej);
                     const l = Array.isArray(ej) ? ej[1] : (ej.link || "");
@@ -1852,7 +1907,7 @@
 
             } else if (tipo === "Series") {
                 const serialOffset = idx * 100;
-                renderSeriesMixInline(pLista, bloque.rutina || [], serialOffset);
+                renderSeriesMixInline(pLista, bloque.rutina || [], serialOffset, bloque.descripcion || "");
             }
         }
 
@@ -1920,10 +1975,13 @@
             return html;
         }
 
-        function renderSeriesMixInline(pLista, rutina, offset) {
+        function renderSeriesMixInline(pLista, rutina, offset, descripcion) {
             offset = offset || 0;
             let html = '<div class="bloque-mix" style="border-color:var(--verde);">' +
                 '<div class="bloque-mix-titulo" style="color:var(--verde);">BLOQUE — SERIES</div>';
+            if (descripcion) {
+                html += '<div class="bloque-descripcion">' + descripcion + '</div>';
+            }
             rutina.forEach(function(ej, i) {
                 const nombre = ej.nombre || ej[0] || "";
                 const link = ej.link || ej[1] || "";
@@ -1932,6 +1990,7 @@
                 const pausaN = calcularPausa(repsN);
                 const idxS = i + offset;
                 seriesRestantes[idxS] = parseInt(seriesN);
+                const notaHtml = ej.nota_tecnica ? '<div class="nota-tecnica">📝 ' + ej.nota_tecnica + '</div>' : '';
                 html += '<div class="serie-card">' +
                     '<div class="serie-header"><span class="serie-nombre">' + nombre + '</span>' +
                     (link ? '<a href="' + link + '" target="_blank" class="btn-play-video">' + svgPlay() + '</a>' : '') + '</div>' +
@@ -1940,6 +1999,7 @@
                     '<div class="serie-meta-item"><span class="serie-meta-label">Reps</span><span class="serie-meta-value">' + repsN + '</span></div>' +
                     '<div class="serie-meta-item"><span class="serie-meta-label">Descanso</span><span class="serie-meta-value" style="color:var(--naranja)">' + pausaN + 's</span></div>' +
                     '</div>' +
+                    notaHtml +
                     '<div style="text-align:center;"><div class="timer-display" id="timer-' + idxS + '">' + pausaN + '</div>' +
                     '<button class="btn-rest" id="btn-' + idxS + '" onclick="marcarSerie(' + idxS + ',' + pausaN + ')">Marcar Serie</button></div></div>';
             });
