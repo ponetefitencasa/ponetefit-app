@@ -1046,9 +1046,12 @@
             }
         }
 
-        // ─── Visibility catch-up (for phone sleep) ───
+        // ─── Visibility catch-up (for phone sleep / background) ───
         var _bgHiddenAt = 0;
         var _bgFastForward = null; // function(missedSeconds) set by active timer
+
+        // Modo silencioso durante fast-forward: suprime beeps y coach
+        var _bgFFMode = false;
 
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'hidden') {
@@ -1056,13 +1059,40 @@
             } else if (document.visibilityState === 'visible') {
                 if (_bgHiddenAt > 0) {
                     var elapsedSec = Math.floor((Date.now() - _bgHiddenAt) / 1000);
-                    if (elapsedSec > 2 && _bgFastForward) {
+                    _bgHiddenAt = 0;
+                    if (elapsedSec > 1 && _bgFastForward) {
                         _bgFastForward(elapsedSec);
                     }
-                    _bgHiddenAt = 0;
                 }
             }
         });
+
+        // ─── Audio keepalive (iOS: mantiene el tab activo en segundo plano) ───
+        // Toca un buffer de audio silencioso cada 25 segundos cuando hay un timer activo
+        var _audioKeepaliveIv = null;
+
+        function _iniciarAudioKeepalive() {
+            if (_audioKeepaliveIv) return;
+            _audioKeepaliveIv = setInterval(function() {
+                if (!timerActivo && !emomRunning && !warmupRunning) return;
+                try {
+                    var ctx = getAudio();
+                    if (ctx.state === 'suspended') ctx.resume();
+                    var buf = ctx.createBuffer(1, 1, 22050);
+                    var src = ctx.createBufferSource();
+                    src.buffer = buf;
+                    src.connect(ctx.destination);
+                    src.start(0);
+                } catch (e) {}
+            }, 25000);
+        }
+
+        function _detenerAudioKeepalive() {
+            if (_audioKeepaliveIv) {
+                clearInterval(_audioKeepaliveIv);
+                _audioKeepaliveIv = null;
+            }
+        }
 
         // ====================================================================
         // COACH DE VOZ ADAPTATIVO — Ponete Fit (Acento Argentino)
@@ -1077,6 +1107,7 @@
 
         function hablarCoach(mensaje) {
             if (!vozActivada) return;
+            if (_bgFFMode) return; // silencio durante fast-forward
             if (!('speechSynthesis' in window)) return;
             _colaVoz.push(mensaje);
             _procesarCola();
@@ -1509,6 +1540,7 @@
         }
 
         function beep(f) {
+            if (_bgFFMode) return; // silencio durante fast-forward
             try {
                 const ctx = getAudio();
                 const o = ctx.createOscillator(),
@@ -1937,18 +1969,17 @@
                 // >>> COACH: Arrancamos con ejercicio + vamos dale (warmup)
                 hablarCoach('Arrancamos con ' + nombre + '. Vamos, dale!');
                 let rem = trabajo;
+                var _wkWorkDeadline = Date.now() + trabajo * 1000;
                 document.getElementById('warmup-clock').innerText = rem < 10 ? "0" + rem : rem;
                 warmupTabInterval = bgSetInterval(function() {
-                    rem--;
+                    rem = Math.max(0, Math.round((_wkWorkDeadline - Date.now()) / 1000));
                     document.getElementById('warmup-clock').innerText = rem < 10 ? "0" + rem : rem;
-                    // >>> COACH: Motivacional a la mitad del trabajo (Tabata warmup)
                     if (rem === Math.floor(trabajo / 2) && rem > 3) coachMotivacional();
                     if (rem <= 3 && rem > 0) beep(400);
                     if (rem <= 0) {
                         bgClearInterval(warmupTabInterval);
                         beep(800);
                         document.getElementById('warmup-status').innerText = "DESCANSO";
-                        // >>> COACH: Pausa + próximo ejercicio (sin 3 2 1 en rest)
                         var _esUltimaWarmup = (ejIdx + 1 >= totalEjs);
                         if (_esUltimaWarmup) {
                             hablarCoach('Es la última, no aflojes!');
@@ -1966,11 +1997,11 @@
                             document.getElementById('warmup-ej').innerText = "ULTIMO — CASI LISTO!";
                         }
                         let d = pausa;
+                        var _wkPausaDeadline = Date.now() + pausa * 1000;
                         document.getElementById('warmup-clock').innerText = d < 10 ? "0" + d : d;
                         warmupTabInterval = bgSetInterval(function() {
-                            d--;
+                            d = Math.max(0, Math.round((_wkPausaDeadline - Date.now()) / 1000));
                             document.getElementById('warmup-clock').innerText = d < 10 ? "0" + d : d;
-                            // >>> COACH: Tabata warmup - NO decir 3 2 1 en descanso
                             if (d <= 0) {
                                 bgClearInterval(warmupTabInterval);
                                 beep(800);
@@ -2071,11 +2102,11 @@
                     _weFillWork.style.width = '100%';
                     _weFillWork.style.transition = 'width 1s linear';
                 }
+                var _weDeadline = Date.now() + 60000;
                 warmupEmomInterval = bgSetInterval(function() {
                     if (warmupEmomPausado) return;
-                    rem--;
+                    rem = Math.max(0, Math.round((_weDeadline - Date.now()) / 1000));
                     document.getElementById('warmup-clock').innerText = rem < 10 ? "0" + rem : rem;
-                    // Actualizar barra de progreso
                     if (_weFillWork) {
                         _weFillWork.style.width = ((rem / 60) * 100) + '%';
                         _weFillWork.style.transition = 'none';
@@ -2133,6 +2164,7 @@
             const clock = document.getElementById('warmup-clock');
             clock.style.display = "block";
             let rem = pausaSeg;
+            var _wssDeadline = Date.now() + pausaSeg * 1000;
             clock.innerText = formatearTiempo(rem);
             document.getElementById('warmup-ej').innerText = "Recuperate antes de la siguiente serie";
 
@@ -2145,7 +2177,7 @@
             }
 
             warmupSeriesIntervals[idx] = bgSetInterval(function() {
-                rem--;
+                rem = Math.max(0, Math.round((_wssDeadline - Date.now()) / 1000));
                 clock.innerText = formatearTiempo(rem);
                 if (rem <= 3 && rem > 0) beep(400);
                 if (rem <= 0) {
@@ -2775,9 +2807,10 @@
             coachPausaSeries(seriesRestantes[i]);
 
             let remaining = pausa;
+            var _restDeadline = Date.now() + pausa * 1000;
             timer.innerText = formatearTiempo(remaining);
             restIntervals[i] = bgSetInterval(function() {
-                remaining--;
+                remaining = Math.max(0, Math.round((_restDeadline - Date.now()) / 1000));
                 timer.innerText = formatearTiempo(remaining);
                 if (remaining <= 3 && remaining > 0) beep(400);
                 if (remaining <= 0) {
@@ -2809,11 +2842,11 @@
             solicitarWakeLock();
 
             let rem = segundos;
+            var _dDeadline = Date.now() + segundos * 1000;
             dInterval = bgSetInterval(function() {
-                rem--;
+                rem = Math.max(0, Math.round((_dDeadline - Date.now()) / 1000));
                 clock.innerText = rem;
                 if (progress) progress.style.width = ((rem / total) * 100) + '%';
-                // >>> COACH: Quedan 10 segundos para arrancar (Circuito pausa)
                 if (rem === 10) hablarCoach('Quedan 10 segundos para arrancar.');
                 if (rem <= 3 && rem > 0) beep(400);
                 if (rem <= 0) {
@@ -2833,6 +2866,8 @@
 
         // ─── BLOQUE TIEMPO (Circuito por Tiempo) ───
         var bloqueTiempoPausado = {};
+        var _btDeadlines = {}; // deadline timestamp por timerId
+        var _btRems = {}; // segundos restantes al pausar por timerId
 
         function iniciarBloqueTiempo(timerId, btnId, totalSeg) {
             const timerEl = document.getElementById(timerId);
@@ -2856,10 +2891,14 @@
             hablarCoach('Arranca el circuito. ' + _fraseRandom(_frasesMotivacionales));
 
             let rem = totalSeg;
-            var _btLastMinAnnounced = -1; // track minute announcements
+            _btDeadlines[timerId] = Date.now() + totalSeg * 1000;
+            var _btLastMinAnnounced = -1;
             bloqueTiempoIntervals[timerId] = bgSetInterval(function() {
-                if (bloqueTiempoPausado[timerId]) return;
-                rem--;
+                if (bloqueTiempoPausado[timerId]) {
+                    _btRems[timerId] = rem; // guardar rem actual mientras está pausado
+                    return;
+                }
+                rem = Math.max(0, Math.round((_btDeadlines[timerId] - Date.now()) / 1000));
                 const m = Math.floor(rem / 60),
                     s = rem % 60;
                 timerEl.innerText = m + ":" + (s < 10 ? "0" + s : s);
@@ -2905,9 +2944,12 @@
             if (pausaBtn) pausaBtn.innerText = bloqueTiempoPausado[timerId] ? '▶ REANUDAR' : '⏸ PAUSAR';
             if (bloqueTiempoPausado[timerId]) {
                 liberarWakeLock();
-                // >>> COACH: Anunciar pausa en bloque de tiempo
                 coachPausa();
             } else {
+                // Recalibrar deadline con los segundos guardados al pausar
+                if (_btRems[timerId] !== undefined) {
+                    _btDeadlines[timerId] = Date.now() + _btRems[timerId] * 1000;
+                }
                 solicitarWakeLock();
             }
         }
@@ -2931,12 +2973,14 @@
 
         // ─── TIMER PRINCIPAL (Tabata / Circuito por Tiempo) ───
         let timerTrabajoCurr = 1;
+        var _tPhaseDeadline = 0; // timestamp en ms cuando termina la fase actual
 
         function iniciarCronometroTiempo() {
             if (timerActivo) return;
             timerActivo = true;
             timerPausado = false;
             solicitarWakeLock();
+            _iniciarAudioKeepalive();
 
             const config = dataGlobal.config || {
                 trabajo: 20,
@@ -2958,7 +3002,6 @@
                 btnPausa.style.display = "block";
                 btnPausa.innerText = "⏸ PAUSAR";
             }
-            // >>> COACH: Arranca el circuito al activar bloque entrenamiento (solo Circuito por Tiempo)
             if (dataGlobal && dataGlobal.tipo === 'Circuito por Tiempo') hablarCoach('Arranca el circuito, vamos con todo!');
 
             tSegs = 5;
@@ -2966,10 +3009,16 @@
             tIdx = 0;
             tRonda = 1;
             timerTrabajoCurr = trabajo;
+            _tPhaseDeadline = Date.now() + 5000;
 
-            // Update clock appearance
             const clock = document.getElementById('clock');
             clock.className = 'prep';
+
+            function _setFase(fase, segs) {
+                tFase = fase;
+                tSegs = segs;
+                _tPhaseDeadline = Date.now() + segs * 1000;
+            }
 
             function actualizarUI() {
                 document.getElementById('t-status').innerText = tFase === "prep" ? "PREPARATE" : (tFase === "trabajo" ? "TRABAJO" : (tFase === "pausa" ? "DESCANSO" : "LISTO"));
@@ -2991,7 +3040,6 @@
                     }
                 }
 
-                // Progress bar
                 const fillEl = document.getElementById('timer-progress-fill');
                 if (fillEl) {
                     const total = tFase === "prep" ? 5 : (tFase === "trabajo" ? trabajo : pausa);
@@ -2999,45 +3047,40 @@
                     fillEl.style.background = tFase === "trabajo" ? "var(--verde)" : (tFase === "pausa" ? "var(--rojo)" : "var(--amarillo)");
                     fillEl.style.transition = "width 1s linear, background 0.3s";
                 }
+                document.getElementById('clock').innerText = tSegs < 10 ? "0" + tSegs : tSegs;
             }
 
-            actualizarUI();
-
-            tInterval = bgSetInterval(function() {
+            // Tick: usa timestamp real para corregir drift de ticks perdidos
+            function _tick() {
                 if (timerPausado) return;
-                tSegs--;
-                document.getElementById('clock').innerText = tSegs < 10 ? "0" + tSegs : tSegs;
 
-                // Progress bar
-                const total = tFase === "prep" ? 5 : (tFase === "trabajo" ? trabajo : pausa);
-                const fillEl = document.getElementById('timer-progress-fill');
-                if (fillEl) {
-                    fillEl.style.width = ((tSegs / total) * 100) + '%';
-                    fillEl.style.transition = "none";
+                // Timestamp-based: calcular segundos restantes desde la hora real
+                tSegs = Math.max(0, Math.round((_tPhaseDeadline - Date.now()) / 1000));
+
+                if (!_bgFFMode) {
+                    document.getElementById('clock').innerText = tSegs < 10 ? "0" + tSegs : tSegs;
+                    const total = tFase === "prep" ? 5 : (tFase === "trabajo" ? trabajo : pausa);
+                    const fillEl = document.getElementById('timer-progress-fill');
+                    if (fillEl) {
+                        fillEl.style.width = ((tSegs / total) * 100) + '%';
+                        fillEl.style.transition = "none";
+                    }
+                    if (tSegs <= 3 && tSegs > 0) beep(400);
+                    if (tFase === "trabajo" && tSegs === Math.floor(trabajo / 2) && tSegs > 3) coachMotivacional();
                 }
-
-                if (tSegs <= 3 && tSegs > 0) beep(400);
-
-                // >>> COACH: Countdown sincronizado en prep (3, 2, 1)
-
-                // >>> COACH: Tabata - NO decir 3 2 1 en descanso
-
-                // >>> COACH: Motivacional a la mitad del trabajo (Tabata)
-                if (tFase === "trabajo" && tSegs === Math.floor(trabajo / 2) && tSegs > 3) coachMotivacional();
 
                 if (tSegs <= 0) {
                     beep(800);
                     if (tFase === "prep") {
-                        tFase = "arrancamos";
-                        tSegs = 1;
-                        document.getElementById('t-status').innerText = "¡ARRANCAMOS!";
-                        document.getElementById('clock').innerText = "";
-                        document.getElementById('clock').className = 'prep';
+                        _setFase("arrancamos", 1);
+                        if (!_bgFFMode) {
+                            document.getElementById('t-status').innerText = "¡ARRANCAMOS!";
+                            document.getElementById('clock').innerText = "";
+                            document.getElementById('clock').className = 'prep';
+                        }
                     } else if (tFase === "arrancamos") {
-                        tFase = "trabajo";
-                        tSegs = trabajo;
+                        _setFase("trabajo", trabajo);
                         actualizarUI();
-                        // >>> COACH: Arrancamos con ejercicio + vamos dale
                         if (rutina.length > 0) {
                             var _ejArr = rutina[tIdx % rutina.length];
                             var _nomArr = Array.isArray(_ejArr) ? _ejArr[0] : (_ejArr.nombre || '');
@@ -3046,12 +3089,9 @@
                             hablarCoach('Vamos, dale!');
                         }
                     } else if (tFase === "trabajo") {
-                        tFase = "pausa";
-                        tSegs = pausa;
                         tIdx++;
+                        _setFase("pausa", pausa);
                         actualizarUI();
-
-                        // >>> COACH: Anunciar descanso y proximo ejercicio (o última)
                         var _esUltimaTabata = (tIdx >= cantidad - 1);
                         if (tIdx < cantidad && rutina.length > 0) {
                             var _nxt = rutina[tIdx % rutina.length];
@@ -3059,26 +3099,21 @@
                         } else if (_esUltimaTabata) {
                             coachDescanso(pausa, '', true);
                         }
-
                     } else if (tFase === "pausa") {
                         if (tIdx >= cantidad) {
                             if (pausaRondas > 0 && tRonda < rondas) {
                                 mostrarPausaRonda(pausaRondas, tRonda, rondas, function() {
                                     tRonda++;
                                     tIdx = 0;
-                                    tFase = "trabajo";
-                                    tSegs = trabajo;
+                                    _setFase("trabajo", trabajo);
                                     actualizarUI();
-                                    // >>> COACH: Nueva ronda
                                     coachRonda(tRonda, rondas);
                                 });
                             } else if (tRonda < rondas) {
                                 tRonda++;
                                 tIdx = 0;
-                                tFase = "trabajo";
-                                tSegs = trabajo;
+                                _setFase("trabajo", trabajo);
                                 actualizarUI();
-                                // >>> COACH: Nueva ronda
                                 coachRonda(tRonda, rondas);
                             } else {
                                 bgClearInterval(tInterval);
@@ -3087,14 +3122,12 @@
                                 document.getElementById('clock').className = "";
                                 timerActivo = false;
                                 liberarWakeLock();
-                                // >>> COACH: Entrenamiento completado
+                                _detenerAudioKeepalive();
                                 coachFinalizacion();
                             }
                         } else {
-                            tFase = "trabajo";
-                            tSegs = trabajo;
+                            _setFase("trabajo", trabajo);
                             actualizarUI();
-                            // >>> COACH: Arrancamos con ejercicio + vamos dale desde descanso
                             if (rutina.length > 0) {
                                 var _ejDescanso = rutina[tIdx % rutina.length];
                                 var _nomDescanso = Array.isArray(_ejDescanso) ? _ejDescanso[0] : (_ejDescanso.nombre || '');
@@ -3105,9 +3138,25 @@
                         }
                     }
                 }
+            }
 
-                document.getElementById('clock').innerText = tSegs < 10 ? "0" + tSegs : tSegs;
-            }, 1000);
+            actualizarUI();
+            tInterval = bgSetInterval(_tick, 1000);
+
+            // Fast-forward: al volver de segundo plano, simula los ticks perdidos en silencio.
+            // Se mueve _tPhaseDeadline 1 segundo hacia atrás en cada iteración para que
+            // el cálculo basado en timestamp avance correctamente por las fases.
+            _bgFastForward = function(elapsed) {
+                if (!timerActivo || timerPausado) return;
+                _bgFFMode = true;
+                var steps = Math.min(elapsed, 3600);
+                for (var i = 0; i < steps && timerActivo; i++) {
+                    _tPhaseDeadline -= 1000;
+                    _tick();
+                }
+                _bgFFMode = false;
+                if (timerActivo) actualizarUI();
+            };
         }
 
         function togglePausaTimer() {
@@ -3116,9 +3165,10 @@
             if (btn) btn.innerText = timerPausado ? "▶ REANUDAR" : "⏸ PAUSAR";
             if (timerPausado) {
                 liberarWakeLock();
-                // >>> COACH: Anunciar pausa
                 coachPausa();
             } else {
+                // Recalibrar deadline con los segundos que quedaban al pausar
+                _tPhaseDeadline = Date.now() + tSegs * 1000;
                 solicitarWakeLock();
             }
         }
@@ -3138,9 +3188,10 @@
             solicitarWakeLock();
 
             let rem = segundos;
+            var _prDeadline = Date.now() + segundos * 1000;
             tPausaRondaResolve = callback;
             pausaRondaInterval = bgSetInterval(function() {
-                rem--;
+                rem = Math.max(0, Math.round((_prDeadline - Date.now()) / 1000));
                 clock.innerText = rem;
                 if (progress) progress.style.width = ((rem / total) * 100) + '%';
                 if (rem <= 3 && rem > 0) beep(400);
@@ -3179,6 +3230,9 @@
                 });
             }
             liberarWakeLock();
+            _detenerAudioKeepalive();
+            _bgFastForward = null;
+            _bgFFMode = false;
         }
 
         // ─── EMOM PRINCIPAL — patron identico a Tabata (5 4 3 2 1 ARRANCAMOS) ───
@@ -3218,17 +3272,21 @@
             }
         }
 
+        var _emomPhaseDeadline = 0; // timestamp en ms cuando termina la fase EMOM actual
+
         function iniciarEmom() {
             if (emomRunning) return;
             emomRunning = true;
             emomPausado = false;
             solicitarWakeLock();
+            _iniciarAudioKeepalive();
 
             emomMinTotal = dataGlobal.minutos_totales || 10;
             emomTotalMin = emomMinTotal;
             emomMinActual = 0;
             emomSegs = 5;
             emomFase = "prep";
+            _emomPhaseDeadline = Date.now() + 5000;
             emomMinutosCiclo = (dataGlobal.minutos_ciclo && dataGlobal.minutos_ciclo.length > 0) ? dataGlobal.minutos_ciclo : emomMinutosCiclo;
 
             document.getElementById('btnStartEmom').style.display = "none";
@@ -3241,52 +3299,52 @@
 
             emomActualizarUI();
 
-            emomInterval = bgSetInterval(function() {
+            function _emomTick() {
                 if (emomPausado) return;
-                emomSegs--;
-                document.getElementById('emom-clock').innerText = emomSegs < 10 ? "0" + emomSegs : emomSegs;
 
-                // Progress bar
-                var total = emomFase === "prep" ? 5 : 60;
-                var fillEl = document.getElementById('emom-progress-fill');
-                if (fillEl) {
-                    fillEl.style.width = ((emomSegs / total) * 100) + '%';
-                    fillEl.style.transition = "none";
-                }
+                // Timestamp-based: calcular segundos reales restantes
+                emomSegs = Math.max(0, Math.round((_emomPhaseDeadline - Date.now()) / 1000));
 
-                if (emomSegs <= 3 && emomSegs > 0) beep(400);
-
-                // >>> COACH: Countdown sincronizado en prep (3, 2, 1)
-
-                // >>> COACH: 15 segundos antes de cambiar de minuto (EMOM)
-                if (emomFase === "trabajo" && emomSegs === 15) {
-                    var _emProxIdx = emomMinActual + 1;
-                    var _emProxNombre = '';
-                    if (emomMinutosCiclo && emomMinutosCiclo.length > 0 && _emProxIdx < emomMinTotal) {
-                        var _emProxCiclo = emomMinutosCiclo[_emProxIdx % emomMinutosCiclo.length];
-                        if (_emProxCiclo && _emProxCiclo.ejercicios && _emProxCiclo.ejercicios.length > 0) {
-                            _emProxNombre = _emProxCiclo.ejercicios[0].nombre || '';
-                        }
+                if (!_bgFFMode) {
+                    document.getElementById('emom-clock').innerText = emomSegs < 10 ? "0" + emomSegs : emomSegs;
+                    var total = emomFase === "prep" ? 5 : 60;
+                    var fillEl = document.getElementById('emom-progress-fill');
+                    if (fillEl) {
+                        fillEl.style.width = ((emomSegs / total) * 100) + '%';
+                        fillEl.style.transition = "none";
                     }
-                    coachConteoEmom(_emProxNombre);
-                }
+                    if (emomSegs <= 3 && emomSegs > 0) beep(400);
 
-                // >>> COACH: Countdown sincronizado al final de cada minuto
+                    if (emomFase === "trabajo" && emomSegs === 15) {
+                        var _emProxIdx = emomMinActual + 1;
+                        var _emProxNombre = '';
+                        if (emomMinutosCiclo && emomMinutosCiclo.length > 0 && _emProxIdx < emomMinTotal) {
+                            var _emProxCiclo = emomMinutosCiclo[_emProxIdx % emomMinutosCiclo.length];
+                            if (_emProxCiclo && _emProxCiclo.ejercicios && _emProxCiclo.ejercicios.length > 0) {
+                                _emProxNombre = _emProxCiclo.ejercicios[0].nombre || '';
+                            }
+                        }
+                        coachConteoEmom(_emProxNombre);
+                    }
+                }
 
                 if (emomSegs <= 0) {
                     beep(800);
                     if (emomFase === "prep") {
                         emomFase = "arrancamos";
                         emomSegs = 1;
-                        document.getElementById('emom-status').innerText = "¡ARRANCAMOS!";
-                        document.getElementById('emom-clock').innerText = "";
-                        document.getElementById('emom-clock').className = 'prep';
-                        document.getElementById('emom-subtexto').innerText = "";
+                        _emomPhaseDeadline = Date.now() + 1000;
+                        if (!_bgFFMode) {
+                            document.getElementById('emom-status').innerText = "¡ARRANCAMOS!";
+                            document.getElementById('emom-clock').innerText = "";
+                            document.getElementById('emom-clock').className = 'prep';
+                            document.getElementById('emom-subtexto').innerText = "";
+                        }
                     } else if (emomFase === "arrancamos") {
                         emomFase = "trabajo";
                         emomSegs = 60;
+                        _emomPhaseDeadline = Date.now() + 60000;
                         emomActualizarUI();
-                        // >>> COACH: Anunciar ejercicios del primer minuto
                         var _emNombresMin0 = _obtenerNombresEmomMinuto(0, emomMinutosCiclo);
                         var _emEsUltimoMin0 = (emomMinTotal === 1);
                         if (_emNombresMin0) {
@@ -3301,25 +3359,27 @@
                         if (emomMinActual >= emomMinTotal) {
                             bgClearInterval(emomInterval);
                             emomInterval = null;
-                            document.getElementById('emom-status').innerText = "COMPLETADO!";
-                            document.getElementById('emom-minuto').innerText = "";
-                            document.getElementById('emom-ejercicio-nombre').innerText = "";
-                            document.getElementById('emom-clock').innerText = "00";
-                            document.getElementById('emom-clock').className = '';
-                            var fillEl2 = document.getElementById('emom-progress-fill');
-                            if (fillEl2) fillEl2.style.width = '100%';
-                            document.getElementById('btnPausaEmom').style.display = "none";
-                            document.getElementById('btnReiniciarEmom').style.display = "none";
-                            document.getElementById('btnStartEmom').style.display = "block";
+                            if (!_bgFFMode) {
+                                document.getElementById('emom-status').innerText = "COMPLETADO!";
+                                document.getElementById('emom-minuto').innerText = "";
+                                document.getElementById('emom-ejercicio-nombre').innerText = "";
+                                document.getElementById('emom-clock').innerText = "00";
+                                document.getElementById('emom-clock').className = '';
+                                var fillEl2 = document.getElementById('emom-progress-fill');
+                                if (fillEl2) fillEl2.style.width = '100%';
+                                document.getElementById('btnPausaEmom').style.display = "none";
+                                document.getElementById('btnReiniciarEmom').style.display = "none";
+                                document.getElementById('btnStartEmom').style.display = "block";
+                            }
                             emomRunning = false;
                             liberarWakeLock();
-                            // >>> COACH: EMOM completado
+                            _detenerAudioKeepalive();
                             coachFinalizacion();
                             return;
                         }
                         emomSegs = 60;
+                        _emomPhaseDeadline = Date.now() + 60000;
                         emomActualizarUI();
-                        // >>> COACH: Anunciar ejercicios del nuevo minuto
                         var _emNombresMinN = _obtenerNombresEmomMinuto(emomMinActual, emomMinutosCiclo);
                         var _emEsUltimoMinN = (emomMinActual + 1 >= emomMinTotal);
                         if (_emNombresMinN) {
@@ -3332,9 +3392,26 @@
                     }
                 }
 
-                document.getElementById('emom-clock').innerText = emomSegs < 10 ? "0" + emomSegs : emomSegs;
-                if (emomFase === "arrancamos") document.getElementById('emom-clock').innerText = "";
-            }, 1000);
+                if (!_bgFFMode) {
+                    document.getElementById('emom-clock').innerText = emomSegs < 10 ? "0" + emomSegs : emomSegs;
+                    if (emomFase === "arrancamos") document.getElementById('emom-clock').innerText = "";
+                }
+            }
+
+            emomInterval = bgSetInterval(_emomTick, 1000);
+
+            // Fast-forward al volver del fondo
+            _bgFastForward = function(elapsed) {
+                if (!emomRunning || emomPausado) return;
+                _bgFFMode = true;
+                var steps = Math.min(elapsed, 3600);
+                for (var i = 0; i < steps && emomRunning; i++) {
+                    _emomPhaseDeadline -= 1000;
+                    _emomTick();
+                }
+                _bgFFMode = false;
+                if (emomRunning) emomActualizarUI();
+            };
         }
 
         // Helper para obtener nombres de ejercicios del minuto EMOM
@@ -3356,10 +3433,11 @@
             if (emomPausado) {
                 btnPausa.innerText = "▶ REANUDAR";
                 liberarWakeLock();
-                // >>> COACH: Pausa EMOM
                 coachPausa();
             } else {
                 btnPausa.innerText = "⏸ PAUSAR";
+                // Recalibrar deadline con los segundos que quedaban al pausar
+                _emomPhaseDeadline = Date.now() + emomSegs * 1000;
                 solicitarWakeLock();
             }
         }
@@ -3445,10 +3523,11 @@
                             document.getElementById(statusId).innerText = "PAUSA RONDAS";
                             document.getElementById(ejId).innerText = "Ronda " + rondaActual + "/" + rondas;
                             let rp = pausaRonda;
+                            var _ivRpDeadline = Date.now() + pausaRonda * 1000;
                             document.getElementById(timerId).innerText = rp;
                             const _ivRp = bgSetInterval(function() {
                                 if (pausado) return;
-                                rp--;
+                                rp = Math.max(0, Math.round((_ivRpDeadline - Date.now()) / 1000));
                                 document.getElementById(timerId).innerText = rp;
                                 if (rp <= 0) {
                                     bgClearInterval(_ivRp);
@@ -3468,10 +3547,11 @@
                     // >>> COACH: Arrancamos con ejercicio + vamos dale (Tabata Mix)
                     hablarCoach('Arrancamos con ' + nombre + '. Vamos, dale!');
                     let t = trabajo;
+                    var _ivTDeadline = Date.now() + trabajo * 1000;
                     document.getElementById(timerId).innerText = t;
                     const _ivT = bgSetInterval(function() {
                         if (pausado) return;
-                        t--;
+                        t = Math.max(0, Math.round((_ivTDeadline - Date.now()) / 1000));
                         document.getElementById(timerId).innerText = t;
                         // >>> COACH: Motivacional a la mitad del trabajo (Tabata Mix)
                         if (t === Math.floor(trabajo / 2) && t > 3) coachMotivacional();
@@ -3496,10 +3576,11 @@
                                 document.getElementById(ejId).innerText = "Respira...";
                             }
                             let p = pausa;
+                            var _ivPDeadline = Date.now() + pausa * 1000;
                             document.getElementById(timerId).innerText = p;
                             const _ivP = bgSetInterval(function() {
                                 if (pausado) return;
-                                p--;
+                                p = Math.max(0, Math.round((_ivPDeadline - Date.now()) / 1000));
                                 document.getElementById(timerId).innerText = p;
                                 // >>> COACH: Tabata Mix - NO decir 3 2 1 en descanso
                                 if (p <= 0) {
@@ -3584,14 +3665,13 @@
                 hablarCoach('Arrancamos. ' + _fraseRandom(_frasesMotivacionales));
                 if (_emBloqueEsUltimo) hablarCoach('Es el último ejercicio.');
                 let rem = 60;
+                var _emBloqueDeadline = Date.now() + 60000;
                 document.getElementById(clockId).innerText = rem < 10 ? "0" + rem : rem;
                 const iv = bgSetInterval(function() {
                     if (emomBloquePausado[clockId]) return;
-                    rem--;
+                    rem = Math.max(0, Math.round((_emBloqueDeadline - Date.now()) / 1000));
                     document.getElementById(clockId).innerText = rem < 10 ? "0" + rem : rem;
-                    // >>> COACH: 15 segundos antes de cambiar de minuto (EMOM bloque)
                     if (rem === 15) coachConteoEmom('');
-                    // >>> COACH: Countdown sincronizado al final del minuto
                     if (rem <= 3 && rem > 0) beep(400);
                     if (rem <= 0) {
                         bgClearInterval(iv);
@@ -3706,10 +3786,11 @@
                     if (_emcEsUltimoMin) hablarCoach('Es el último ejercicio.');
                 }
                 let rem = 60;
+                var _emcBloqueDeadline = Date.now() + 60000;
                 document.getElementById(clockId).innerText = rem < 10 ? "0" + rem : rem;
                 const iv = bgSetInterval(function() {
                     if (emomBloquePausado[clockId]) return;
-                    rem--;
+                    rem = Math.max(0, Math.round((_emcBloqueDeadline - Date.now()) / 1000));
                     document.getElementById(clockId).innerText = rem < 10 ? "0" + rem : rem;
                     // >>> COACH: 15 segundos antes de cambiar (EMOM bloque con ciclo)
                     if (rem === 15) {
@@ -3815,8 +3896,11 @@
             bloqueTiempoIntervals = {};
             seriesRestantes = {};
             circVueltasRestantes = 0;
-            detenerCoach(); // Detener coach al cerrar rutina
+            detenerCoach();
             liberarWakeLock();
+            _detenerAudioKeepalive();
+            _bgFastForward = null;
+            _bgFFMode = false;
         }
     </script>
 </body>
