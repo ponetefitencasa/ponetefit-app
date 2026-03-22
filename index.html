@@ -1095,7 +1095,7 @@
         }
 
         // ====================================================================
-        // COACH DE VOZ ADAPTATIVO — Ponete Fit (Acento Argentino)
+        // COACH DE VOZ ADAPTATIVO — Ponete Fit (Voz Masculina, Acento Argentino)
         // ====================================================================
 
         // ─── INTERRUPTOR GLOBAL ─────────────────────────────────────────
@@ -1104,6 +1104,112 @@
         // ─── SISTEMA DE COLAS ───────────────────────────────────────────
         var _colaVoz = [];
         var _hablando = false;
+
+        // ─── CACHE DE VOZ MASCULINA ────────────────────────────────────
+        var _vozMasculinaCache = null;
+        var _vozMasculinaCacheResuelta = false;
+        var _vozEsMasculinaPorNombre = false;
+
+        // Nombres femeninos conocidos para excluir
+        var _femNames = [
+            'female', 'femenin', 'mujer', 'paulina', 'monica', 'mónica',
+            'elena', 'maria', 'maría', 'laura', 'carmen', 'conchita',
+            'lucia', 'lucía', 'miren', 'ines', 'inés', 'silvia', 'ana',
+            'rosa', 'sabina', 'elvira', 'catalina', 'francisca',
+            'penelope', 'penélope', 'nora', 'helena', 'zira', 'cortana',
+            'grandma', 'siri', 'linda', 'joana', 'paola'
+        ];
+
+        // Nombres masculinos conocidos y keywords para identificar voces masculinas
+        var _maleNames = [
+            'male', 'hombre', 'masculin',
+            'diego', 'carlos', 'jorge', 'andrés', 'andres',
+            'pablo', 'juan', 'enrique', 'pedro', 'miguel',
+            'sergio', 'javier', 'raúl', 'raul', 'fernando',
+            'ricardo', 'alejandro', 'daniel', 'gabriel',
+            'héctor', 'hector', 'marco', 'gonzalo', 'álvaro', 'alvaro',
+            'microsoft pablo', 'microsoft jorge', 'microsoft diego',
+            'microsoft carlos', 'microsoft raúl', 'microsoft raul',
+            'microsoft sergio', 'microsoft enrique',
+            'google español'
+        ];
+
+        function _esFemenina(n) {
+            for (var fi = 0; fi < _femNames.length; fi++) {
+                if (n.indexOf(_femNames[fi]) !== -1) return true;
+            }
+            return false;
+        }
+
+        function _esMasculina(n) {
+            for (var mi = 0; mi < _maleNames.length; mi++) {
+                if (n.indexOf(_maleNames[mi]) !== -1) return true;
+            }
+            return false;
+        }
+
+        // ─── RESOLVER VOZ MASCULINA (con cache) ────────────────────────
+        function _resolverVozMasculina() {
+            var voces = window.speechSynthesis.getVoices();
+            if (!voces || voces.length === 0) return;
+
+            // Categorías de voces (priorizando masculinas)
+            var vozARMasc = null;      // es-AR explícitamente masculina
+            var vozARNoFem = null;     // es-AR no femenina
+            var vozAR = null;          // cualquier es-AR
+            var vozLatamMasc = null;   // es-MX/es-US/es-CO/etc masculina
+            var vozLatamNoFem = null;  // es-MX/etc no femenina
+            var vozESMasc = null;      // es-ES masculina
+            var vozESNoFem = null;     // es-ES no femenina
+            var vozGoogleEs = null;    // Google español no femenina
+            var vozGenMasc = null;     // cualquier es-* masculina
+            var vozGenNoFem = null;    // cualquier es-* no femenina
+
+            for (var i = 0; i < voces.length; i++) {
+                var vLang = voces[i].lang || '';
+                var vName = (voces[i].name || '').toLowerCase();
+                var fem = _esFemenina(vName);
+                var masc = _esMasculina(vName);
+
+                // es-AR (Argentina)
+                if (vLang === 'es-AR') {
+                    if (masc && !vozARMasc) vozARMasc = voces[i];
+                    if (!fem && !vozARNoFem) vozARNoFem = voces[i];
+                    if (!vozAR) vozAR = voces[i];
+                }
+                // Español latino (MX, US, CO, CL, PE, 419)
+                if (vLang === 'es-MX' || vLang === 'es-US' || vLang === 'es-CO' ||
+                    vLang === 'es-CL' || vLang === 'es-PE' || vLang === 'es-419') {
+                    if (masc && !vozLatamMasc) vozLatamMasc = voces[i];
+                    if (!fem && !vozLatamNoFem) vozLatamNoFem = voces[i];
+                }
+                // es-ES (España)
+                if (vLang === 'es-ES') {
+                    if (masc && !vozESMasc) vozESMasc = voces[i];
+                    if (!fem && !vozESNoFem) vozESNoFem = voces[i];
+                }
+                // Google español
+                if (vName.indexOf('google') !== -1 && vLang.indexOf('es') === 0) {
+                    if (!fem && !vozGoogleEs) vozGoogleEs = voces[i];
+                }
+                // Cualquier es-*
+                if (vLang.indexOf('es') === 0) {
+                    if (masc && !vozGenMasc) vozGenMasc = voces[i];
+                    if (!fem && !vozGenNoFem) vozGenNoFem = voces[i];
+                }
+            }
+
+            // Prioridad: masculina AR > no-fem AR > masculina Latam > masculina ES >
+            //            masculina genérica > no-fem Latam > no-fem ES > Google español >
+            //            no-fem genérica > cualquier AR
+            var vozSeleccionada = vozARMasc || vozARNoFem || vozLatamMasc || vozESMasc ||
+                vozGenMasc || vozLatamNoFem || vozESNoFem || vozGoogleEs ||
+                vozGenNoFem || vozAR || null;
+
+            _vozMasculinaCache = vozSeleccionada;
+            _vozEsMasculinaPorNombre = !!(vozARMasc || vozLatamMasc || vozESMasc || vozGenMasc);
+            _vozMasculinaCacheResuelta = true;
+        }
 
         function hablarCoach(mensaje) {
             if (!vozActivada) return;
@@ -1122,70 +1228,20 @@
             utterance.rate = 0.92;
             utterance.volume = 1.0;
 
-            // Buscar voz masculina: es-AR > es-ES > es-MX > Google > cualquier es-*
-            // Incluye keywords: 'male', 'hombre', 'masculin' y nombres masculinos conocidos
-            var voces = window.speechSynthesis.getVoices();
-            var vozARMale = null,
-                vozAR = null,
-                vozESMale = null,
-                vozES = null,
-                vozMXMale = null,
-                vozGoogle = null,
-                vozGen = null;
-            var _femNames = ['female', 'femenin', 'mujer', 'paulina', 'monica', 'elena', 'maria', 'laura', 'carmen', 'conchita', 'lucia', 'miren', 'ines', 'silvia', 'ana', 'rosa'];
-            var _maleNames = ['male', 'hombre', 'masculin', 'diego', 'carlos', 'jorge', 'andres', 'pablo', 'juan', 'enrique', 'pedro', 'miguel', 'sergio', 'javier'];
-
-            function _esFemenina(n) {
-                for (var fi = 0; fi < _femNames.length; fi++) {
-                    if (n.indexOf(_femNames[fi]) !== -1) return true;
-                }
-                return false;
+            // Re-resolver voz si no se ha cacheado o si las voces cambiaron
+            if (!_vozMasculinaCacheResuelta) {
+                _resolverVozMasculina();
             }
 
-            function _esMasculina(n) {
-                for (var mi = 0; mi < _maleNames.length; mi++) {
-                    if (n.indexOf(_maleNames[mi]) !== -1) return true;
-                }
-                return false;
-            }
+            utterance.voice = _vozMasculinaCache;
 
-            var _vozEncontradaPorNombre = false;
-            for (var i = 0; i < voces.length; i++) {
-                var vLang = voces[i].lang || '';
-                var vName = (voces[i].name || '').toLowerCase();
-                var fem = _esFemenina(vName);
-                var masc = _esMasculina(vName);
-                if (vLang === 'es-AR') {
-                    if ((masc || !fem) && !vozARMale) {
-                        vozARMale = voces[i];
-                        if (masc) _vozEncontradaPorNombre = true;
-                    }
-                    if (!vozAR) vozAR = voces[i];
-                }
-                if (vLang === 'es-ES') {
-                    if ((masc || !fem) && !vozESMale) {
-                        vozESMale = voces[i];
-                        if (masc) _vozEncontradaPorNombre = true;
-                    }
-                    if (!vozES) vozES = voces[i];
-                }
-                if (vLang === 'es-MX' || vLang === 'es-US') {
-                    if ((masc || !fem) && !vozMXMale) {
-                        vozMXMale = voces[i];
-                        if (masc) _vozEncontradaPorNombre = true;
-                    }
-                }
-                if (!vozGoogle && vName.indexOf('google') !== -1 && vLang.indexOf('es') === 0 && !fem) vozGoogle = voces[i];
-                if (!vozGen && vLang.indexOf('es') === 0 && !fem) vozGen = voces[i];
-            }
-            var vozSeleccionada = vozARMale || vozAR || vozESMale || vozES || vozMXMale || vozGoogle || vozGen || null;
-            utterance.voice = vozSeleccionada;
-
-            // Si no se encontró voz masculina por nombre, bajar pitch a 0.8 para masculinizar la voz por defecto
-            if (!_vozEncontradaPorNombre) {
+            // Masculinización forzada del pitch (rango 0.7 – 0.8):
+            // - Voz masculina confirmada por nombre → pitch 0.8 (refuerza gravedad natural)
+            // - Sin voz masculina nativa → pitch 0.7 (masculiniza voz femenina/neutra)
+            if (_vozEsMasculinaPorNombre) {
                 utterance.pitch = 0.8;
             } else {
-                utterance.pitch = 0.65;
+                utterance.pitch = 0.7;
             }
 
             utterance.onend = function() {
@@ -1199,12 +1255,15 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        // Pre-cargar voces
+        // Pre-cargar voces y resolver voz masculina al inicio
         if ('speechSynthesis' in window) {
             window.speechSynthesis.getVoices();
+            _resolverVozMasculina();
             if (window.speechSynthesis.onvoiceschanged !== undefined) {
                 window.speechSynthesis.onvoiceschanged = function() {
                     window.speechSynthesis.getVoices();
+                    _vozMasculinaCacheResuelta = false;
+                    _resolverVozMasculina();
                 };
             }
         }
