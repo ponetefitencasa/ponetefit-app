@@ -869,6 +869,11 @@
     <!-- Wake Lock indicator dot -->
     <div id="wakelock-indicator"></div>
 
+    <!-- Video invisible en loop: fallback para mantener pantalla encendida en Safari iOS -->
+    <!-- Es un video de 1x1 px completamente transparente, sin audio, que se reproduce en loop -->
+    <video id="wakelock-video-fallback" playsinline muted loop preload="none" style="position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;top:0;left:0;" src="data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAA3ttZGF0AAACrgYF//+q3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDEyOSByMjA4NCBiZGU3MjM0IC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAxNSAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTMgZGVibG9jaz0xOjA6MCBhbmFseXNlPTB4MzoweDExMyBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MSBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiBmbj01MCBiZnJhbWVzPTMgYl9weXJhbWlkPTIgYl9hZGFwdD0xIGJfYmlhcz0wIGRpcmVjdD0xIHdlaWdodGI9MSBvcGVuX2dvcD0wIHdlaWdodHA9MiBrZXlpbnQ9MjUwIGtleWludF9taW49MjUgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD00MCByYz1jcmYgbWJ0cmVlPTEgY3JmPTI4LjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IGlwX3JhdGlvPTEuNDAgYXE9MToxLjAwAIAAAAFZZYiEAD//8m+P5OXfBeLGOfKE3xkODvFZuBflHv/+VwJIta6cbpIo4ABLoKBgsiaO59C2cSoLqpd0oYJt0qkFdCpUH7WI+Xm0JWyDQgFoqP+O0LcDzpJRCO3NwBU+TJMtQJwllSqCQCEeMObP0hQbNrYJE2s1q2FWjMoGoI+oCMfPdGqjDi3gAGO0tl6Uf8AAWsAAAAeAZWiEAD//8m+P5OXfBeLGOfKE3xkODvFZuBflHv/+VwJIta6cbpIo4ABLoKBgsiaO59C2cSoLqpd0oYJt0qkFdCpUH7WI+Xm0JWyDQgFoqP+O0LcDzpJRCO3NwBU+TJMtQJwllSqCQCEeMObP0hQbNrYJE2s1q2FWjMoGoI+oCMfPdGqjDi3gAGO0tl6Uf8AAWsAAAAeAZWiEAD//8m+P5OXfBeLGOfKE3xkODvFZuBflHv/+VwJIta6cbpIo4ABLoKBgsiaO59C2cSoLqpd0oYJt0qkFdCpUH7WI+Xm0JWyDQgFoqP+O0LcDzpJRCO3NwBU+TJMtQJwllSqCQCEeMObP0hQbNrYJE2s1q2FWjMoGoI+oCMfPdGqjDi3gAGO0tl6Uf8AAWsAAAAeAZWiEAD//8m+P5OXfBeLGOfKE3xkODvFZuBflHv/+VwJIta6cbpIo4ABLoKBgsiaO59C2cSoLqpd0oYJt0qkFdCpUH7WI+Xm0JWyDQgFoqP+O0LcDzpJRCO3NwBU+TJMtQJwllSqCQCEeMObP0hQbNrYJE2s1q2FWjMoGoI+oCMfPdGqjDi3gAGO0tl6Uf8AAWsAAAAeAZWiEAD//8m+P5OXfBeLGOfKE3xkODvFZuBflHv/+VwJIta6cbpIo4ABLoKBgsiaO59C2cSoLqpd0oYJt0qkFdCpUH7WI+Xm0JWyDQgFoqP+O0LcDzpJRCO3NwBU+TJMtQJwllSqCQCEeMObP0hQbNrYJE2s1q2FWjMoGoI+oCMfPdGqjDi3gAGO0tl6Uf8AAWs=">
+    </video>
+
     <div id="toast">Rutina cargada</div>
 
     <!-- Overlay descanso circuito -->
@@ -1084,19 +1089,20 @@
             var utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'es-AR';
             utterance.rate = 0.92;
-            utterance.pitch = 0.65;
             utterance.volume = 1.0;
 
-            // Buscar voz masculina: es-AR > es-ES > Google > cualquier es-*
+            // Buscar voz masculina: es-AR > es-ES > es-MX > Google > cualquier es-*
+            // Incluye keywords: 'male', 'hombre', 'masculin' y nombres masculinos conocidos
             var voces = window.speechSynthesis.getVoices();
             var vozARMale = null,
                 vozAR = null,
                 vozESMale = null,
                 vozES = null,
+                vozMXMale = null,
                 vozGoogle = null,
                 vozGen = null;
-            var _femNames = ['female', 'femenin', 'paulina', 'monica', 'elena', 'maria', 'laura', 'carmen', 'conchita', 'lucia', 'miren', 'ines', 'silvia', 'ana', 'rosa'];
-            var _maleNames = ['male', 'masculin', 'diego', 'carlos', 'jorge', 'andres', 'pablo', 'juan', 'enrique', 'pedro'];
+            var _femNames = ['female', 'femenin', 'mujer', 'paulina', 'monica', 'elena', 'maria', 'laura', 'carmen', 'conchita', 'lucia', 'miren', 'ines', 'silvia', 'ana', 'rosa'];
+            var _maleNames = ['male', 'hombre', 'masculin', 'diego', 'carlos', 'jorge', 'andres', 'pablo', 'juan', 'enrique', 'pedro', 'miguel', 'sergio', 'javier'];
 
             function _esFemenina(n) {
                 for (var fi = 0; fi < _femNames.length; fi++) {
@@ -1111,26 +1117,45 @@
                 }
                 return false;
             }
+
+            var _vozEncontradaPorNombre = false;
             for (var i = 0; i < voces.length; i++) {
                 var vLang = voces[i].lang || '';
                 var vName = (voces[i].name || '').toLowerCase();
                 var fem = _esFemenina(vName);
                 var masc = _esMasculina(vName);
                 if (vLang === 'es-AR') {
-                    if ((masc || !fem) && !vozARMale) vozARMale = voces[i];
+                    if ((masc || !fem) && !vozARMale) {
+                        vozARMale = voces[i];
+                        if (masc) _vozEncontradaPorNombre = true;
+                    }
                     if (!vozAR) vozAR = voces[i];
                 }
                 if (vLang === 'es-ES') {
-                    if ((masc || !fem) && !vozESMale) vozESMale = voces[i];
+                    if ((masc || !fem) && !vozESMale) {
+                        vozESMale = voces[i];
+                        if (masc) _vozEncontradaPorNombre = true;
+                    }
                     if (!vozES) vozES = voces[i];
                 }
                 if (vLang === 'es-MX' || vLang === 'es-US') {
-                    if ((masc || !fem) && !vozGen) vozGen = voces[i];
+                    if ((masc || !fem) && !vozMXMale) {
+                        vozMXMale = voces[i];
+                        if (masc) _vozEncontradaPorNombre = true;
+                    }
                 }
                 if (!vozGoogle && vName.indexOf('google') !== -1 && vLang.indexOf('es') === 0 && !fem) vozGoogle = voces[i];
                 if (!vozGen && vLang.indexOf('es') === 0 && !fem) vozGen = voces[i];
             }
-            utterance.voice = vozARMale || vozAR || vozESMale || vozES || vozGoogle || vozGen || null;
+            var vozSeleccionada = vozARMale || vozAR || vozESMale || vozES || vozMXMale || vozGoogle || vozGen || null;
+            utterance.voice = vozSeleccionada;
+
+            // Si no se encontró voz masculina por nombre, bajar pitch a 0.8 para masculinizar la voz por defecto
+            if (!_vozEncontradaPorNombre) {
+                utterance.pitch = 0.8;
+            } else {
+                utterance.pitch = 0.65;
+            }
 
             utterance.onend = function() {
                 _hablando = false;
@@ -1392,18 +1417,40 @@
 
         // ─── WAKE LOCK API ───
         let wakeLock = null;
+        let _wakeLockVideoFallback = null;
+
+        // Fallback: video invisible en loop para mantener pantalla encendida en Safari iOS
+        function _activarVideoFallback() {
+            if (_wakeLockVideoFallback) return;
+            var v = document.getElementById('wakelock-video-fallback');
+            if (!v) return;
+            v.play().catch(function() {});
+            _wakeLockVideoFallback = v;
+        }
+
+        function _desactivarVideoFallback() {
+            if (_wakeLockVideoFallback) {
+                _wakeLockVideoFallback.pause();
+                _wakeLockVideoFallback = null;
+            }
+        }
 
         async function solicitarWakeLock() {
-            if (!('wakeLock' in navigator)) return;
-            try {
-                wakeLock = await navigator.wakeLock.request('screen');
-                document.getElementById('wakelock-indicator').classList.add('active');
-                wakeLock.addEventListener('release', () => {
-                    document.getElementById('wakelock-indicator').classList.remove('active');
-                });
-            } catch (err) {
-                // Silently handle — older browsers
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    document.getElementById('wakelock-indicator').classList.add('active');
+                    wakeLock.addEventListener('release', () => {
+                        document.getElementById('wakelock-indicator').classList.remove('active');
+                    });
+                    return;
+                } catch (err) {
+                    // Caer al fallback si falla la API nativa
+                }
             }
+            // Fallback para Safari iOS y navegadores sin Wake Lock API
+            _activarVideoFallback();
+            document.getElementById('wakelock-indicator').classList.add('active');
         }
 
         async function liberarWakeLock() {
@@ -1412,8 +1459,9 @@
                     await wakeLock.release();
                 } catch (e) {}
                 wakeLock = null;
-                document.getElementById('wakelock-indicator').classList.remove('active');
             }
+            _desactivarVideoFallback();
+            document.getElementById('wakelock-indicator').classList.remove('active');
         }
 
         // Re-solicitar WakeLock si la pestaña vuelve a ganar foco
@@ -1508,6 +1556,35 @@
             setTimeout(() => t.classList.remove('show'), 2800);
         }
 
+        // ─── DESBLOQUEO DE AUDIO PARA iOS ───
+        // Safari bloquea el AudioContext y la síntesis de voz hasta que hay
+        // una interacción real del usuario. Se desbloquean aquí en el primer toque.
+        var _audioDesbloqueado = false;
+
+        function _desbloquearAudioIOS() {
+            if (_audioDesbloqueado) return;
+            _audioDesbloqueado = true;
+            // Desbloquear AudioContext
+            try {
+                var ctx = getAudio();
+                if (ctx.state === 'suspended') {
+                    ctx.resume().catch(function() {});
+                }
+                // Reproducir un buffer vacío para desbloquear el contexto en iOS
+                var buf = ctx.createBuffer(1, 1, 22050);
+                var src = ctx.createBufferSource();
+                src.buffer = buf;
+                src.connect(ctx.destination);
+                src.start(0);
+            } catch (e) {}
+            // Desbloquear síntesis de voz en iOS: pronunciar un utterance vacío
+            if ('speechSynthesis' in window) {
+                var u = new SpeechSynthesisUtterance('');
+                u.volume = 0;
+                window.speechSynthesis.speak(u);
+            }
+        }
+
         // ─── CONSULTAR RUTINA ───
         async function consultarRutina() {
             const cod = document.getElementById('codigoInput').value.trim().toLowerCase();
@@ -1515,6 +1592,8 @@
             const btn = document.querySelector('.btn-principal');
             btn.innerText = 'Cargando...';
             btn.disabled = true;
+            // Desbloquear audio en iOS aprovechando esta interacción real del usuario
+            _desbloquearAudioIOS();
             try {
                 const res = await fetch("https://ponetefit-app-default-rtdb.firebaseio.com/rutinas/" + cod + ".json");
                 const data = await res.json();
