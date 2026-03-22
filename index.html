@@ -1109,6 +1109,29 @@
         var _vozMasculinaCache = null;
         var _vozMasculinaCacheResuelta = false;
         var _vozEsMasculinaPorNombre = false;
+        var _vocesListasCargadas = false;
+
+        // ─── FUNCIÓN DE LIMPIEZA DE TEXTO ──────────────────────────────
+        // Chrome deletrea palabras en MAYÚSCULAS (ej. "SENTADILLAS" → "S-E-N-T-A-D-I-L-L-A-S")
+        // y se confunde con guiones y caracteres especiales.
+        // Esta función normaliza el texto para que se pronuncie correctamente.
+        function _limpiarTextoParaVoz(texto) {
+            if (!texto) return '';
+            // 1. Convertir todo a minúsculas (evita deletreo de mayúsculas en Chrome)
+            var limpio = texto.toLowerCase();
+            // 2. Reemplazar guiones bajos y guiones medios por espacios
+            limpio = limpio.replace(/[_\-]+/g, ' ');
+            // 3. Eliminar caracteres especiales que confunden al sintetizador
+            //    (conservar letras, números, espacios, acentos, ñ, signos ¿¡ y puntuación básica)
+            limpio = limpio.replace(/[^a-záéíóúüñ0-9\s.,;:¿?¡!'"()]/g, '');
+            // 4. Colapsar múltiples espacios en uno solo
+            limpio = limpio.replace(/\s+/g, ' ').trim();
+            // 5. Capitalizar la primera letra para una pronunciación más natural
+            if (limpio.length > 0) {
+                limpio = limpio.charAt(0).toUpperCase() + limpio.slice(1);
+            }
+            return limpio;
+        }
 
         // Nombres femeninos conocidos para excluir
         var _femNames = [
@@ -1130,8 +1153,17 @@
             'héctor', 'hector', 'marco', 'gonzalo', 'álvaro', 'alvaro',
             'microsoft pablo', 'microsoft jorge', 'microsoft diego',
             'microsoft carlos', 'microsoft raúl', 'microsoft raul',
-            'microsoft sergio', 'microsoft enrique',
-            'google español'
+            'microsoft sergio', 'microsoft enrique'
+        ];
+
+        // Voces específicas confirmadas como masculinas en Chrome
+        // 'Google español de Estados Unidos' suele ser masculina en Chrome
+        var _vozesConfirmadasMasculinas = [
+            'google español de estados unidos',
+            'microsoft pablo',
+            'microsoft jorge',
+            'microsoft diego',
+            'microsoft carlos'
         ];
 
         function _esFemenina(n) {
@@ -1148,28 +1180,42 @@
             return false;
         }
 
+        function _esVozConfirmadaMasculina(n) {
+            for (var ci = 0; ci < _vozesConfirmadasMasculinas.length; ci++) {
+                if (n.indexOf(_vozesConfirmadasMasculinas[ci]) !== -1) return true;
+            }
+            return false;
+        }
+
         // ─── RESOLVER VOZ MASCULINA (con cache) ────────────────────────
         function _resolverVozMasculina() {
             var voces = window.speechSynthesis.getVoices();
             if (!voces || voces.length === 0) return;
 
-            // Categorías de voces (priorizando masculinas)
-            var vozARMasc = null;      // es-AR explícitamente masculina
-            var vozARNoFem = null;     // es-AR no femenina
-            var vozAR = null;          // cualquier es-AR
-            var vozLatamMasc = null;   // es-MX/es-US/es-CO/etc masculina
-            var vozLatamNoFem = null;  // es-MX/etc no femenina
-            var vozESMasc = null;      // es-ES masculina
-            var vozESNoFem = null;     // es-ES no femenina
-            var vozGoogleEs = null;    // Google español no femenina
-            var vozGenMasc = null;     // cualquier es-* masculina
-            var vozGenNoFem = null;    // cualquier es-* no femenina
+            // Categorías de voces (priorizando masculinas confirmadas)
+            var vozConfirmada = null;   // Voz confirmada masculina (ej. 'Google español de Estados Unidos')
+            var vozARMasc = null;       // es-AR explícitamente masculina por nombre
+            var vozARNoFem = null;      // es-AR no femenina
+            var vozAR = null;           // cualquier es-AR
+            var vozLatamMasc = null;    // es-MX/es-US/es-CO/etc masculina
+            var vozLatamNoFem = null;   // es-MX/etc no femenina
+            var vozESMasc = null;       // es-ES masculina
+            var vozESNoFem = null;      // es-ES no femenina
+            var vozGoogleEs = null;     // Google español no femenina (genérica)
+            var vozGenMasc = null;      // cualquier es-* masculina
+            var vozGenNoFem = null;     // cualquier es-* no femenina
 
             for (var i = 0; i < voces.length; i++) {
                 var vLang = voces[i].lang || '';
                 var vName = (voces[i].name || '').toLowerCase();
                 var fem = _esFemenina(vName);
                 var masc = _esMasculina(vName);
+                var confirmada = _esVozConfirmadaMasculina(vName);
+
+                // Máxima prioridad: voces confirmadas masculinas
+                if (confirmada && !vozConfirmada) {
+                    vozConfirmada = voces[i];
+                }
 
                 // es-AR (Argentina)
                 if (vLang === 'es-AR') {
@@ -1188,7 +1234,7 @@
                     if (masc && !vozESMasc) vozESMasc = voces[i];
                     if (!fem && !vozESNoFem) vozESNoFem = voces[i];
                 }
-                // Google español
+                // Google español (genérico)
                 if (vName.indexOf('google') !== -1 && vLang.indexOf('es') === 0) {
                     if (!fem && !vozGoogleEs) vozGoogleEs = voces[i];
                 }
@@ -1199,49 +1245,71 @@
                 }
             }
 
-            // Prioridad: masculina AR > no-fem AR > masculina Latam > masculina ES >
-            //            masculina genérica > no-fem Latam > no-fem ES > Google español >
-            //            no-fem genérica > cualquier AR
-            var vozSeleccionada = vozARMasc || vozARNoFem || vozLatamMasc || vozESMasc ||
-                vozGenMasc || vozLatamNoFem || vozESNoFem || vozGoogleEs ||
+            // Prioridad final:
+            // 1. Voz confirmada masculina (Google español de EEUU, Microsoft Pablo, etc.)
+            // 2. Masculina AR > no-fem AR
+            // 3. Masculina Latam > Masculina ES > Masculina genérica
+            // 4. No-fem Latam > No-fem ES > Google español > No-fem genérica
+            // 5. Cualquier AR como último recurso
+            var vozSeleccionada = vozConfirmada || vozARMasc || vozARNoFem ||
+                vozLatamMasc || vozESMasc || vozGenMasc ||
+                vozLatamNoFem || vozESNoFem || vozGoogleEs ||
                 vozGenNoFem || vozAR || null;
 
             _vozMasculinaCache = vozSeleccionada;
-            _vozEsMasculinaPorNombre = !!(vozARMasc || vozLatamMasc || vozESMasc || vozGenMasc);
+            _vozEsMasculinaPorNombre = !!(vozConfirmada || vozARMasc || vozLatamMasc || vozESMasc || vozGenMasc);
             _vozMasculinaCacheResuelta = true;
+            _vocesListasCargadas = (voces.length > 0);
         }
 
         function hablarCoach(mensaje) {
             if (!vozActivada) return;
             if (_bgFFMode) return; // silencio durante fast-forward
             if (!('speechSynthesis' in window)) return;
-            _colaVoz.push(mensaje);
+
+            // Limpiar texto para evitar deletreo en Chrome
+            var mensajeLimpio = _limpiarTextoParaVoz(mensaje);
+            if (!mensajeLimpio) return;
+
+            _colaVoz.push(mensajeLimpio);
             _procesarCola();
         }
 
         function _procesarCola() {
             if (_hablando || _colaVoz.length === 0) return;
+
+            // Esperar a que las voces estén cargadas (Chrome las carga de forma asíncrona)
+            if (!_vocesListasCargadas) {
+                _resolverVozMasculina();
+                // Si aún no hay voces, reintentar en 100ms
+                if (!_vocesListasCargadas) {
+                    setTimeout(function() { _procesarCola(); }, 100);
+                    return;
+                }
+            }
+
             _hablando = true;
             var texto = _colaVoz.shift();
             var utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'es-AR';
-            utterance.rate = 0.92;
             utterance.volume = 1.0;
 
-            // Re-resolver voz si no se ha cacheado o si las voces cambiaron
+            // Re-resolver voz si el cache fue invalidado
             if (!_vozMasculinaCacheResuelta) {
                 _resolverVozMasculina();
             }
 
             utterance.voice = _vozMasculinaCache;
 
-            // Masculinización forzada del pitch (rango 0.7 – 0.8):
-            // - Voz masculina confirmada por nombre → pitch 0.8 (refuerza gravedad natural)
-            // - Sin voz masculina nativa → pitch 0.7 (masculiniza voz femenina/neutra)
+            // Configuración de pitch y rate según tipo de voz encontrada:
             if (_vozEsMasculinaPorNombre) {
-                utterance.pitch = 0.8;
+                // Voz masculina confirmada: pitch bajo para reforzar gravedad, rate normal
+                utterance.pitch = 0.75;
+                utterance.rate = 0.92;
             } else {
-                utterance.pitch = 0.7;
+                // Sin voz masculina nativa: pitch y rate bajos para simular voz masculina
+                utterance.pitch = 0.75;
+                utterance.rate = 0.9;
             }
 
             utterance.onend = function() {
@@ -1252,20 +1320,36 @@
                 _hablando = false;
                 _procesarCola();
             };
-            window.speechSynthesis.speak(utterance);
+
+            // Workaround Chrome: cancelar síntesis previa silenciosa para evitar bugs
+            window.speechSynthesis.cancel();
+            // Pequeño delay tras cancel para que Chrome no ignore el speak
+            setTimeout(function() {
+                window.speechSynthesis.speak(utterance);
+            }, 50);
         }
 
         // Pre-cargar voces y resolver voz masculina al inicio
+        // Chrome carga las voces de forma asíncrona, por eso usamos onvoiceschanged
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.getVoices();
-            _resolverVozMasculina();
+            // Intento inicial (puede devolver lista vacía en Chrome)
+            var _vocesIniciales = window.speechSynthesis.getVoices();
+            if (_vocesIniciales && _vocesIniciales.length > 0) {
+                _resolverVozMasculina();
+            }
+            // Evento que se dispara cuando Chrome termina de cargar las voces
             if (window.speechSynthesis.onvoiceschanged !== undefined) {
                 window.speechSynthesis.onvoiceschanged = function() {
-                    window.speechSynthesis.getVoices();
                     _vozMasculinaCacheResuelta = false;
                     _resolverVozMasculina();
                 };
             }
+            // Fallback: si onvoiceschanged no se dispara, reintentar tras 500ms
+            setTimeout(function() {
+                if (!_vocesListasCargadas) {
+                    _resolverVozMasculina();
+                }
+            }, 500);
         }
 
         function detenerCoach() {
