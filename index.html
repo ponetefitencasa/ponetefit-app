@@ -1053,10 +1053,47 @@
         // Modo silencioso durante fast-forward: suprime beeps y coach
         var _bgFFMode = false;
 
+        // Cola de mensajes de voz que no se pudieron reproducir en background
+        var _bgMensajesPendientes = [];
+
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'hidden') {
                 _bgHiddenAt = Date.now();
+                // Intentar mantener AudioContext activo al ir a background
+                try {
+                    var ctx = getAudio();
+                    if (ctx.state === 'suspended') ctx.resume().catch(function() {});
+                } catch (e) {}
             } else if (document.visibilityState === 'visible') {
+                // ── VOLVIÓ AL FRENTE: reanudar todo ──
+                // 1. Reanudar AudioContext inmediatamente
+                try {
+                    var ctx2 = getAudio();
+                    if (ctx2.state === 'suspended') ctx2.resume().catch(function() {});
+                } catch (e) {}
+
+                // 2. Reanudar speechSynthesis: cancelar cualquier utterance colgado
+                //    y procesar la cola pendiente
+                if ('speechSynthesis' in window) {
+                    if (window.speechSynthesis.paused) {
+                        window.speechSynthesis.resume();
+                    }
+                    // Si hay mensajes que no se pudieron decir en background, decir el último
+                    if (_bgMensajesPendientes.length > 0) {
+                        var ultimoMsg = _bgMensajesPendientes[_bgMensajesPendientes.length - 1];
+                        _bgMensajesPendientes = [];
+                        // Poner al frente de la cola para que se diga primero
+                        _colaVoz.unshift(ultimoMsg);
+                    }
+                    // Forzar procesamiento de cola si hay mensajes pendientes
+                    if (_colaVoz.length > 0 && !_hablando) {
+                        _hablando = false;
+                        window.speechSynthesis.cancel();
+                        setTimeout(function() { _procesarCola(); }, 100);
+                    }
+                }
+
+                // 3. Fast-forward del timer si pasó tiempo
                 if (_bgHiddenAt > 0) {
                     var elapsedSec = Math.floor((Date.now() - _bgHiddenAt) / 1000);
                     _bgHiddenAt = 0;
@@ -1067,29 +1104,39 @@
             }
         });
 
-        // ─── Audio keepalive (iOS: mantiene el tab activo en segundo plano) ───
-        // Toca un buffer de audio silencioso cada 25 segundos cuando hay un timer activo
+        // ─── Audio keepalive (mantiene audio vivo en segundo plano) ───
+        // Usa bgSetInterval (Web Worker) para NO ser throttled por el navegador.
+        // Reproduce un buffer silencioso cada 10s y reanuda AudioContext si se suspendió.
+        // También mantiene speechSynthesis activo intentando reanudar la cola de voz.
         var _audioKeepaliveIv = null;
 
         function _iniciarAudioKeepalive() {
             if (_audioKeepaliveIv) return;
-            _audioKeepaliveIv = setInterval(function() {
+            _audioKeepaliveIv = bgSetInterval(function() {
                 if (!timerActivo && !emomRunning && !warmupRunning) return;
                 try {
                     var ctx = getAudio();
-                    if (ctx.state === 'suspended') ctx.resume();
+                    // Reanudar AudioContext si el navegador lo suspendió en background
+                    if (ctx.state === 'suspended') {
+                        ctx.resume().catch(function() {});
+                    }
+                    // Pulso de audio silencioso para mantener el canal de audio abierto
                     var buf = ctx.createBuffer(1, 1, 22050);
                     var src = ctx.createBufferSource();
                     src.buffer = buf;
                     src.connect(ctx.destination);
                     src.start(0);
                 } catch (e) {}
-            }, 25000);
+                // Intentar reanudar speechSynthesis si hay mensajes pendientes
+                if ('speechSynthesis' in window && !window.speechSynthesis.speaking && _colaVoz.length > 0 && !_hablando) {
+                    _procesarCola();
+                }
+            }, 10000);
         }
 
         function _detenerAudioKeepalive() {
             if (_audioKeepaliveIv) {
-                clearInterval(_audioKeepaliveIv);
+                bgClearInterval(_audioKeepaliveIv);
                 _audioKeepaliveIv = null;
             }
         }
@@ -1355,6 +1402,16 @@
             var mensajeLimpio = _limpiarTextoParaVoz(mensaje);
             if (!mensajeLimpio) return;
 
+            // Si estamos en background, guardar el mensaje para decirlo al volver
+            // (muchos navegadores móviles suspenden speechSynthesis en background)
+            if (document.visibilityState === 'hidden') {
+                _bgMensajesPendientes.push(mensajeLimpio);
+                // Limitar a los últimos 3 mensajes para no acumular demasiados
+                if (_bgMensajesPendientes.length > 3) {
+                    _bgMensajesPendientes = _bgMensajesPendientes.slice(-3);
+                }
+            }
+
             _colaVoz.push(mensajeLimpio);
             _procesarCola();
         }
@@ -1399,10 +1456,23 @@
                 _hablando = false;
                 _procesarCola();
             };
-            utterance.onerror = function() {
+            utterance.onerror = function(ev) {
                 _hablando = false;
+                // Si el error fue por estar en background, guardar para después
+                if (document.visibilityState === 'hidden' && texto) {
+                    _bgMensajesPendientes.push(texto);
+                    if (_bgMensajesPendientes.length > 3) {
+                        _bgMensajesPendientes = _bgMensajesPendientes.slice(-3);
+                    }
+                }
                 _procesarCola();
             };
+
+            // Reanudar AudioContext antes de hablar (por si fue suspendido en background)
+            try {
+                var ctx = getAudio();
+                if (ctx.state === 'suspended') ctx.resume().catch(function() {});
+            } catch (e) {}
 
             // Workaround Chrome: cancel previo + pequeño delay evita que ignore el speak
             window.speechSynthesis.cancel();
@@ -1795,6 +1865,10 @@
             if (_bgFFMode) return; // silencio durante fast-forward
             try {
                 const ctx = getAudio();
+                // Reanudar AudioContext si fue suspendido (background/bloqueo de pantalla)
+                if (ctx.state === 'suspended') {
+                    ctx.resume().catch(function() {});
+                }
                 const o = ctx.createOscillator(),
                     g = ctx.createGain();
                 o.connect(g);
