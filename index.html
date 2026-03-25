@@ -178,33 +178,54 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 20px;
+            padding: 10px 16px;
             background: var(--tarjeta);
             border-bottom: 1px solid var(--borde);
             flex-shrink: 0;
             z-index: 1000;
+            position: sticky;
+            top: 0;
         }
         
         .header-rutina-info {
             display: flex;
             flex-direction: column;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        #alumno-nombre-display {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--texto);
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .header-rutina-sub {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 2px;
         }
         
         .tipo-tag {
             display: inline-block;
             background: var(--naranja);
             color: white;
-            padding: 3px 10px;
-            border-radius: 6px;
+            padding: 2px 8px;
+            border-radius: 5px;
             font-weight: 900;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             letter-spacing: 2px;
             text-transform: uppercase;
-            margin-bottom: 2px;
         }
         
         #id-display {
-            font-size: 1rem;
+            font-size: 0.8rem;
             font-weight: 700;
             font-family: 'Roboto Mono', monospace;
             color: var(--texto-suave);
@@ -862,6 +883,88 @@
             line-height: 1;
             margin: 6px 0;
         }
+
+        /* ─── BARRA DE PROGRESO GENERAL DE RUTINA (FIJA) ─── */
+        .rutina-progress-container {
+            background: var(--tarjeta);
+            padding: 8px 16px 10px;
+            border-bottom: 1px solid var(--borde);
+            flex-shrink: 0;
+        }
+        .rutina-progress-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: var(--texto-suave);
+            text-transform: uppercase;
+        }
+        .rutina-progress-label span.pct {
+            color: var(--verde);
+            font-size: 0.8rem;
+            font-family: 'Roboto Mono', monospace;
+        }
+        .rutina-progress-track {
+            width: 100%;
+            height: 6px;
+            background: var(--fondo);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .rutina-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--verde), #00e676);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* ─── TIMER BLOQUEADO (opacidad reducida) ─── */
+        .timer-bloqueado {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* ─── BOTONES CONTROL TIMER (iniciar/pausa/reiniciar) ─── */
+        .timer-controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .timer-controls .btn-ctrl {
+            flex: 1;
+            min-width: 80px;
+            max-width: 140px;
+            padding: 10px 6px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            border: 1px solid var(--borde);
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.2s, opacity 0.2s;
+        }
+        .btn-ctrl-iniciar {
+            background: linear-gradient(135deg, var(--verde), #00c853);
+            color: #000;
+            border-color: var(--verde) !important;
+        }
+        .btn-ctrl-pausa {
+            background: linear-gradient(135deg, var(--amarillo), #f9a825);
+            color: #000;
+            border-color: var(--amarillo) !important;
+        }
+        .btn-ctrl-reiniciar {
+            background: var(--tarjeta-alt);
+            color: var(--texto-suave);
+            border-color: var(--borde) !important;
+        }
     </style>
 </head>
 
@@ -916,10 +1019,24 @@
     <div id="rutina-modal">
         <div class="header-rutina">
             <div class="header-rutina-info">
-                <span class="tipo-tag" id="tipo-tag">MODO</span>
-                <span id="id-display">---</span>
+                <span id="alumno-nombre-display">---</span>
+                <div class="header-rutina-sub">
+                    <span class="tipo-tag" id="tipo-tag">MODO</span>
+                    <span id="id-display">---</span>
+                </div>
             </div>
             <button class="btn-header" onclick="cerrar()">Salir</button>
+        </div>
+
+        <!-- Barra de progreso general de la rutina (fija, fuera del scroll) -->
+        <div class="rutina-progress-container" id="rutina-progress-container" style="display:none;">
+            <div class="rutina-progress-label">
+                <span>PROGRESO DE RUTINA</span>
+                <span class="pct" id="rutina-progress-pct">0%</span>
+            </div>
+            <div class="rutina-progress-track">
+                <div class="rutina-progress-fill" id="rutina-progress-fill"></div>
+            </div>
         </div>
 
         <div class="container-scroll" id="modal-scroll">
@@ -961,6 +1078,7 @@
                     </div>
                     <button class="btn-principal" id="btnStartTimer" onclick="iniciarCronometroTiempo()" style="background:linear-gradient(135deg,var(--verde),#00c853); color:#000; margin-bottom:10px;">EMPEZAR</button>
                     <button class="btn-pausa" id="btnPausaTimer" onclick="togglePausaTimer()" style="display:none;">⏸ PAUSAR</button>
+                    <button class="btn-pausa" id="btnReiniciarTimer" onclick="reiniciarTimer()" style="display:none; margin-top:10px; background:var(--tarjeta-alt); color:var(--texto-suave); border-color:var(--borde);">↺ REINICIAR</button>
                 </div>
             </div>
 
@@ -1853,6 +1971,232 @@
         let emomMinutosCiclo = [];
         let emomCicloLen = 1;
 
+        // ─── BLOQUEO GLOBAL DE TIMERS ───
+        var _timerGlobalActivo = false;
+
+        function hayTimerActivo() {
+            if (_timerGlobalActivo) {
+                mostrarToast('Ya hay un timer activo. Esperá a que termine.');
+                return true;
+            }
+            return false;
+        }
+
+        function activarTimerGlobal() {
+            _timerGlobalActivo = true;
+        }
+
+        function desactivarTimerGlobal() {
+            _timerGlobalActivo = false;
+        }
+
+        // ─── PROGRESO DE RUTINA (SISTEMA POR SEGMENTOS PONDERADOS) ───
+        // Cada segmento: {nombre, pctStart, pctEnd, totalItems, completados}
+        // - Calentamiento siempre vale 10% (si existe)
+        // - Cada bloque de entrenamiento recibe el % restante proporcional a su peso
+        // - El peso se calcula según series/vueltas/minutos/etc. de cada bloque
+        var _progresoSegmentos = [];
+        var _progresoSegActual = 0;
+
+        // Calcula el "peso" de un bloque según su tipo y cantidad de trabajo
+        function _pesoBloqueProgreso(bloque) {
+            var tipo = bloque.tipo || '';
+            if (tipo === 'Series') {
+                var ejs = bloque.rutina || bloque.ejercicios || bloque.datos || [];
+                var total = 0;
+                for (var i = 0; i < ejs.length; i++) total += (parseInt(ejs[i].series) || 3);
+                return total || 3;
+            }
+            if (tipo === 'Circuito') return bloque.vueltas_bloque || 3;
+            if (tipo === 'Tabata') {
+                var cfg = bloque.config || {};
+                return (cfg.rondas || bloque.rondas || 1);
+            }
+            if (tipo === 'EMOM') return bloque.minutos_totales || 10;
+            if (tipo === 'Circuito por Tiempo') {
+                var ejsCT = bloque.rutina || bloque.datos || [];
+                if (ejsCT.length > 0 && ejsCT[0] && ejsCT[0].ejercicios) return ejsCT.length;
+                return (bloque.config || {}).rondas || 1;
+            }
+            return 1;
+        }
+
+        // Calcula cuántas llamadas a incrementarProgreso hará este bloque
+        function _itemsBloqueProgreso(bloque) {
+            var tipo = bloque.tipo || '';
+            if (tipo === 'Series') {
+                var ejs = bloque.rutina || bloque.ejercicios || bloque.datos || [];
+                var total = 0;
+                for (var i = 0; i < ejs.length; i++) total += (parseInt(ejs[i].series) || 3);
+                return total || 3;
+            }
+            if (tipo === 'Circuito') return bloque.vueltas_bloque || 3;
+            if (tipo === 'Tabata') return 1;
+            if (tipo === 'EMOM') return 1;
+            if (tipo === 'Circuito por Tiempo') {
+                var ejsCT2 = bloque.rutina || bloque.datos || [];
+                if (ejsCT2.length > 0 && ejsCT2[0] && ejsCT2[0].ejercicios) return ejsCT2.length;
+                return (bloque.config || {}).rondas || 1;
+            }
+            return 1;
+        }
+
+        function inicializarProgreso(data) {
+            _progresoSegmentos = [];
+            _progresoSegActual = 0;
+
+            var container = document.getElementById('rutina-progress-container');
+            if (container) container.style.display = 'block';
+
+            // ── Detectar si hay calentamiento ──
+            // El warmup se almacena en data.warmup_ejercicios / data.warmup_tipo
+            var warmupEjs = data.warmup_ejercicios || [];
+            var warmupTipo = data.warmup_tipo || '';
+            var warmupDet = data.warmup_config_detalle || {};
+            var hasWarmup = warmupEjs.length > 0;
+            var warmupPct = hasWarmup ? 10 : 0;
+
+            // ── Calcular warmup totalItems (cuántas llamadas a incrementarProgreso hará) ──
+            // Solo warmup tipo "Circuito (Vueltas)" llama a incrementarProgreso por vuelta
+            var warmupItems = 0;
+            if (hasWarmup) {
+                if (warmupTipo === 'Circuito (Vueltas)' || warmupTipo === 'Circuito') {
+                    warmupItems = data.warmup_vueltas || warmupDet.vueltas || 2;
+                }
+                // Otros tipos de warmup (EMOM, Series por tiempo) no llaman a incrementarProgreso
+                // → items=0 → el segmento se auto-salta cuando empieza el entrenamiento
+            }
+
+            // ── Armar segmentos de entrenamiento ──
+            var trainingSegs = []; // [{peso, items}]
+            var tipo = data.tipo;
+
+            if (tipo === 'ENTRENAMIENTO') {
+                var bloques = data.bloques || [];
+                if (bloques.length > 0) {
+                    for (var bi = 0; bi < bloques.length; bi++) {
+                        trainingSegs.push({
+                            nombre: bloques[bi].tipo || ('Bloque ' + (bi + 1)),
+                            peso: _pesoBloqueProgreso(bloques[bi]),
+                            items: _itemsBloqueProgreso(bloques[bi])
+                        });
+                    }
+                } else {
+                    // Formato antiguo con modos_seleccionados
+                    var modos = data.modos_seleccionados || [];
+                    for (var mi = 0; mi < modos.length; mi++) {
+                        var m = modos[mi];
+                        var pseudoBloque = { tipo: m };
+                        if (m === 'series') { pseudoBloque.tipo = 'Series'; pseudoBloque.rutina = data.series || []; }
+                        else if (m === 'circuito') { pseudoBloque.tipo = 'Circuito'; pseudoBloque.vueltas_bloque = data.circuito_vueltas || 3; }
+                        else if (m === 'tabata') { pseudoBloque.tipo = 'Tabata'; }
+                        else if (m === 'emom') { pseudoBloque.tipo = 'EMOM'; pseudoBloque.minutos_totales = data.minutos_totales || 10; }
+                        else if (m === 'circ_tiempo') { pseudoBloque.tipo = 'Circuito por Tiempo'; pseudoBloque.config = data.config || {}; }
+                        trainingSegs.push({
+                            nombre: pseudoBloque.tipo,
+                            peso: _pesoBloqueProgreso(pseudoBloque),
+                            items: _itemsBloqueProgreso(pseudoBloque)
+                        });
+                    }
+                }
+            } else {
+                // Modo único
+                var singleBloque = { tipo: tipo, rutina: data.rutina || data.datos || [], config: data.config || {}, vueltas_bloque: data.vueltas_bloque, minutos_totales: data.minutos_totales };
+                trainingSegs.push({
+                    nombre: tipo,
+                    peso: _pesoBloqueProgreso(singleBloque),
+                    items: _itemsBloqueProgreso(singleBloque)
+                });
+            }
+
+            // ── Normalizar pesos de entrenamiento al (100 - warmupPct)% ──
+            var totalPeso = 0;
+            for (var ti = 0; ti < trainingSegs.length; ti++) totalPeso += trainingSegs[ti].peso;
+            if (totalPeso === 0) totalPeso = 1;
+            var trainingPct = 100 - warmupPct;
+
+            // ── Construir array final de segmentos ──
+            var curPct = 0;
+
+            if (hasWarmup) {
+                _progresoSegmentos.push({
+                    nombre: 'Calentamiento',
+                    pctStart: 0,
+                    pctEnd: warmupPct,
+                    totalItems: warmupItems, // 0 si no es circuito → se auto-salta
+                    completados: 0
+                });
+                curPct = warmupPct;
+            }
+
+            for (var si = 0; si < trainingSegs.length; si++) {
+                var segPct = (trainingSegs[si].peso / totalPeso) * trainingPct;
+                _progresoSegmentos.push({
+                    nombre: trainingSegs[si].nombre,
+                    pctStart: curPct,
+                    pctEnd: curPct + segPct,
+                    totalItems: trainingSegs[si].items || 1,
+                    completados: 0
+                });
+                curPct += segPct;
+            }
+
+            if (_progresoSegmentos.length === 0) {
+                _progresoSegmentos.push({ nombre: 'Entrenamiento', pctStart: 0, pctEnd: 100, totalItems: 1, completados: 0 });
+            }
+
+            // Si el primer segmento tiene 0 items (warmup no-circuito), avanzar automáticamente
+            _avanzarSegmentosVacios();
+            actualizarProgresoUI();
+        }
+
+        function _avanzarSegmentosVacios() {
+            while (_progresoSegActual < _progresoSegmentos.length - 1 &&
+                   _progresoSegmentos[_progresoSegActual].totalItems === 0) {
+                _progresoSegActual++;
+            }
+        }
+
+        function incrementarProgreso(cantidad) {
+            if (_progresoSegmentos.length === 0) return;
+            var n = cantidad || 1;
+            var seg = _progresoSegmentos[_progresoSegActual];
+            if (!seg) return;
+
+            seg.completados += n;
+            if (seg.completados > seg.totalItems) seg.completados = seg.totalItems;
+
+            // Auto-avanzar al siguiente segmento cuando el actual se completa
+            while (_progresoSegActual < _progresoSegmentos.length - 1 &&
+                   _progresoSegmentos[_progresoSegActual].completados >= _progresoSegmentos[_progresoSegActual].totalItems) {
+                _progresoSegActual++;
+            }
+
+            actualizarProgresoUI();
+        }
+
+        function actualizarProgresoUI() {
+            var pct = 0;
+            if (_progresoSegmentos.length > 0) {
+                // Sumar los segmentos completados + el parcial del actual
+                for (var i = 0; i < _progresoSegmentos.length; i++) {
+                    var seg = _progresoSegmentos[i];
+                    if (i < _progresoSegActual) {
+                        pct = seg.pctEnd; // segmento terminado → usar su tope
+                    } else if (i === _progresoSegActual) {
+                        var ratio = seg.totalItems > 0 ? (seg.completados / seg.totalItems) : 0;
+                        pct = seg.pctStart + ratio * (seg.pctEnd - seg.pctStart);
+                        break;
+                    }
+                }
+            }
+            pct = Math.min(100, Math.max(0, pct));
+            var fillEl = document.getElementById('rutina-progress-fill');
+            var pctEl = document.getElementById('rutina-progress-pct');
+            if (fillEl) fillEl.style.width = pct.toFixed(1) + '%';
+            if (pctEl) pctEl.innerText = Math.round(pct) + '%';
+        }
+
         // AudioContext
         let audio = null;
 
@@ -1967,8 +2311,12 @@
                     const nombre = partes[0].charAt(0).toUpperCase() + partes[0].slice(1);
                     nombreUsuario = nombre;
                     document.title = 'PONETEFIT | Entrenamiento para ' + nombre;
+                    document.getElementById('alumno-nombre-display').innerText = nombre.toUpperCase();
+                    document.getElementById('id-display').innerText = 'RUTINA ' + partes.slice(1).join('-').toUpperCase();
+                } else {
+                    document.getElementById('alumno-nombre-display').innerText = 'ENTRENAMIENTO';
+                    document.getElementById('id-display').innerText = cod.toUpperCase();
                 }
-                document.getElementById('id-display').innerText = cod.toUpperCase();
                 document.getElementById('tipo-tag').innerText = data.tipo.toUpperCase();
                 render(data);
                 document.getElementById('rutina-modal').classList.add('visible');
@@ -2122,6 +2470,7 @@
                     if (vRestantes <= 0) return;
                     vRestantes--;
                     vCounter.innerText = vRestantes > 0 ? 'Vueltas restantes: ' + vRestantes : 'CALENTAMIENTO COMPLETO!';
+                    incrementarProgreso(1);
                     // >>> COACH: Pausa circuito vueltas warmup con motivación y vueltas restantes
                     coachPausaVueltas(vRestantes);
                     if (pausaV > 0 && vRestantes > 0) iniciarDescansoCircuito(pausaV);
@@ -2151,6 +2500,16 @@
                     togglePausaBloqueTiempo('warmup-clock', pausaBtnCTW);
                 };
                 tBox.appendChild(pausaBtnCTW);
+                // Botón reiniciar para Circuito por Tiempo warmup
+                var reiniciarBtnCTW = document.createElement('button');
+                reiniciarBtnCTW.id = 'warmup-ct-reiniciar';
+                reiniciarBtnCTW.className = 'btn-pausa';
+                reiniciarBtnCTW.style.cssText = 'margin-top:8px; display:none; background:var(--tarjeta-alt); color:var(--texto-suave); border-color:var(--borde);';
+                reiniciarBtnCTW.innerText = '↺ REINICIAR';
+                reiniciarBtnCTW.onclick = function() {
+                    reiniciarWarmupCT(dur);
+                };
+                tBox.appendChild(reiniciarBtnCTW);
             } else if (tipo === "Tabata") {
                 tBox.style.display = "block";
                 tStatus.innerText = "TABATA CALENTAMIENTO";
@@ -2160,6 +2519,26 @@
                 tBtn.onclick = function() {
                     iniciarTabataWarmup(ejsW, det);
                 };
+                // Botón pausa para Tabata warmup
+                var pausaBtnTW = document.createElement('button');
+                pausaBtnTW.id = 'warmup-tabata-pausa';
+                pausaBtnTW.className = 'btn-pausa';
+                pausaBtnTW.style.cssText = 'margin-top:8px; display:none;';
+                pausaBtnTW.innerText = '⏸ PAUSAR';
+                pausaBtnTW.onclick = function() {
+                    togglePausaTabataWarmup(pausaBtnTW);
+                };
+                tBox.appendChild(pausaBtnTW);
+                // Botón reiniciar para Tabata warmup
+                var reiniciarBtnTW = document.createElement('button');
+                reiniciarBtnTW.id = 'warmup-tabata-reiniciar';
+                reiniciarBtnTW.className = 'btn-pausa';
+                reiniciarBtnTW.style.cssText = 'margin-top:8px; display:none; background:var(--tarjeta-alt); color:var(--texto-suave); border-color:var(--borde);';
+                reiniciarBtnTW.innerText = '↺ REINICIAR';
+                reiniciarBtnTW.onclick = function() {
+                    reiniciarTabataWarmup();
+                };
+                tBox.appendChild(reiniciarBtnTW);
             } else if (tipo === "EMOM") {
                 tBox.style.display = "block";
                 tStatus.innerText = "EMOM CALENTAMIENTO";
@@ -2187,6 +2566,16 @@
                     togglePausaEmomWarmup(pausaBtnEW);
                 };
                 tBox.appendChild(pausaBtnEW);
+                // Botón reiniciar para EMOM warmup
+                var reiniciarBtnEW = document.createElement('button');
+                reiniciarBtnEW.id = 'warmup-emom-reiniciar';
+                reiniciarBtnEW.className = 'btn-pausa';
+                reiniciarBtnEW.style.cssText = 'margin-top:8px; display:none; background:var(--tarjeta-alt); color:var(--texto-suave); border-color:var(--borde);';
+                reiniciarBtnEW.innerText = '↺ REINICIAR';
+                reiniciarBtnEW.onclick = function() {
+                    reiniciarEmomWarmup();
+                };
+                tBox.appendChild(reiniciarBtnEW);
             } else if (tipo === "Series/Reps") {
                 const seriesW = det.series || 3;
                 const repsW = det.reps || 10;
@@ -2220,7 +2609,9 @@
 
             if (tipo === "Tabata" || tipo === "EMOM" || tipo === "Circuito por Tiempo") {
                 if (warmupRunning) return;
+                if (hayTimerActivo()) return;
                 warmupRunning = true;
+                activarTimerGlobal();
                 solicitarWakeLock();
                 const btn = document.getElementById('warmup-btn');
                 if (btn) {
@@ -2252,6 +2643,8 @@
                         if (btn) btn.disabled = false;
                         var durSeg = (det.duracion_bloque || 3) * 60;
                         statusEl.innerText = "EN CURSO...";
+                        var _ctReinBtn = document.getElementById('warmup-ct-reiniciar');
+                        if (_ctReinBtn) _ctReinBtn.style.display = 'block';
                         iniciarBloqueTiempo('warmup-clock', 'warmup-btn', durSeg);
                     };
                 }
@@ -2263,10 +2656,17 @@
 
         function iniciarTabataWarmup(ejsW, det) {
             if (warmupRunning) return;
+            if (hayTimerActivo()) return;
             warmupRunning = true;
+            warmupTabataPausado = false;
+            activarTimerGlobal();
             solicitarWakeLock();
             document.getElementById('warmup-btn').disabled = true;
             document.getElementById('warmup-btn').innerText = "En curso...";
+            var _wPausaBtn = document.getElementById('warmup-tabata-pausa');
+            if (_wPausaBtn) _wPausaBtn.style.display = 'block';
+            var _wReinBtn = document.getElementById('warmup-tabata-reiniciar');
+            if (_wReinBtn) _wReinBtn.style.display = 'block';
             const trabajo = det.trabajo || 20;
             const pausa = det.pausa || 10;
             const totalEjs = ejsW.length;
@@ -2285,6 +2685,9 @@
                     document.getElementById('warmup-ej').innerText = "";
                     document.getElementById('warmup-clock').innerText = "OK";
                     warmupRunning = false;
+                    desactivarTimerGlobal();
+                    if (_wPausaBtn) _wPausaBtn.style.display = 'none';
+                    if (_wReinBtn) _wReinBtn.style.display = 'none';
                     liberarWakeLock();
                     return;
                 }
@@ -2298,6 +2701,7 @@
                 var _wkWorkDeadline = Date.now() + trabajo * 1000;
                 document.getElementById('warmup-clock').innerText = rem < 10 ? "0" + rem : rem;
                 warmupTabInterval = bgSetInterval(function() {
+                    if (warmupTabataPausado) return;
                     rem = Math.max(0, Math.round((_wkWorkDeadline - Date.now()) / 1000));
                     document.getElementById('warmup-clock').innerText = rem < 10 ? "0" + rem : rem;
                     if (rem === Math.floor(trabajo / 2) && rem > 3) coachMotivacional();
@@ -2326,6 +2730,7 @@
                         var _wkPausaDeadline = Date.now() + pausa * 1000;
                         document.getElementById('warmup-clock').innerText = d < 10 ? "0" + d : d;
                         warmupTabInterval = bgSetInterval(function() {
+                            if (warmupTabataPausado) return;
                             d = Math.max(0, Math.round((_wkPausaDeadline - Date.now()) / 1000));
                             document.getElementById('warmup-clock').innerText = d < 10 ? "0" + d : d;
                             if (d <= 0) {
@@ -2338,6 +2743,78 @@
                     }
                 }, 1000);
             }
+        }
+
+        // ─── PAUSE/REINICIAR TABATA WARMUP ───
+        var warmupTabataPausado = false;
+
+        function togglePausaTabataWarmup(pausaBtn) {
+            warmupTabataPausado = !warmupTabataPausado;
+            if (pausaBtn) pausaBtn.innerText = warmupTabataPausado ? '▶ REANUDAR' : '⏸ PAUSAR';
+            if (warmupTabataPausado) {
+                liberarWakeLock();
+                coachPausa();
+            } else {
+                solicitarWakeLock();
+            }
+        }
+
+        function reiniciarTabataWarmup() {
+            bgClearInterval(warmupTabInterval);
+            warmupRunning = false;
+            warmupTabataPausado = false;
+            desactivarTimerGlobal();
+            var clockEl = document.getElementById('warmup-clock');
+            var statusEl = document.getElementById('warmup-status');
+            var ejEl = document.getElementById('warmup-ej');
+            var btn = document.getElementById('warmup-btn');
+            if (clockEl) clockEl.innerText = '--';
+            if (statusEl) statusEl.innerText = 'TABATA CALENTAMIENTO';
+            if (ejEl) ejEl.innerText = '';
+            if (btn) { btn.disabled = false; btn.innerText = 'Iniciar Tabata Warmup'; }
+            var pausaBtn = document.getElementById('warmup-tabata-pausa');
+            if (pausaBtn) { pausaBtn.style.display = 'none'; pausaBtn.innerText = '⏸ PAUSAR'; }
+            var reiniciarBtn = document.getElementById('warmup-tabata-reiniciar');
+            if (reiniciarBtn) reiniciarBtn.style.display = 'none';
+            liberarWakeLock();
+        }
+
+        function reiniciarWarmupCT(durMin) {
+            bgClearInterval(bloqueTiempoIntervals['warmup-clock']);
+            warmupRunning = false;
+            bloqueTiempoPausado['warmup-clock'] = false;
+            desactivarTimerGlobal();
+            var clockEl = document.getElementById('warmup-clock');
+            var statusEl = document.getElementById('warmup-status');
+            var btn = document.getElementById('warmup-btn');
+            if (clockEl) clockEl.innerText = durMin + ':00';
+            if (statusEl) statusEl.innerText = 'TIEMPO: ' + durMin + ' min';
+            if (btn) { btn.disabled = false; btn.dataset.running = '0'; btn.innerText = 'Iniciar Tiempo'; }
+            var pausaBtn = document.getElementById('warmup-ct-pausa');
+            if (pausaBtn) { pausaBtn.style.display = 'none'; pausaBtn.innerText = '⏸ PAUSAR'; }
+            var reiniciarBtn = document.getElementById('warmup-ct-reiniciar');
+            if (reiniciarBtn) reiniciarBtn.style.display = 'none';
+            liberarWakeLock();
+        }
+
+        function reiniciarEmomWarmup() {
+            bgClearInterval(warmupEmomInterval);
+            warmupRunning = false;
+            warmupEmomPausado = false;
+            desactivarTimerGlobal();
+            var clockEl = document.getElementById('warmup-clock');
+            var statusEl = document.getElementById('warmup-status');
+            var ejEl = document.getElementById('warmup-ej');
+            var btn = document.getElementById('warmup-btn');
+            if (clockEl) { clockEl.innerText = '05'; clockEl.style.color = 'var(--verde)'; clockEl.style.textShadow = '0 0 40px var(--verde-glow)'; }
+            if (statusEl) statusEl.innerText = 'EMOM CALENTAMIENTO';
+            if (ejEl) ejEl.innerText = '';
+            if (btn) { btn.disabled = false; btn.innerText = 'Iniciar EMOM Warmup'; }
+            var pausaBtn = document.getElementById('warmup-emom-pausa');
+            if (pausaBtn) { pausaBtn.style.display = 'none'; pausaBtn.innerText = '⏸ PAUSAR'; }
+            var reiniciarBtn = document.getElementById('warmup-emom-reiniciar');
+            if (reiniciarBtn) reiniciarBtn.style.display = 'none';
+            liberarWakeLock();
         }
 
         let warmupEmomInterval = null;
@@ -2358,7 +2835,9 @@
 
         function iniciarEmomWarmup(det) {
             if (warmupRunning) return;
+            if (hayTimerActivo()) return;
             warmupRunning = true;
+            activarTimerGlobal();
             warmupEmomPausado = false;
             solicitarWakeLock();
             document.getElementById('warmup-btn').disabled = true;
@@ -2368,9 +2847,11 @@
             const ejsPorMin = ejsW.length > 0 ? Math.ceil(ejsW.length / mins) : 1;
             let minActual = 0;
 
-            // Mostrar boton pausa EMOM warmup
+            // Mostrar boton pausa y reiniciar EMOM warmup
             var pausaBtnEW = document.getElementById('warmup-emom-pausa');
             if (pausaBtnEW) pausaBtnEW.style.display = 'block';
+            var reiniciarBtnEW = document.getElementById('warmup-emom-reiniciar');
+            if (reiniciarBtnEW) reiniciarBtnEW.style.display = 'block';
 
             var clockEl = document.getElementById('warmup-clock');
             var statusEl = document.getElementById('warmup-status');
@@ -2395,8 +2876,10 @@
                     document.getElementById('warmup-ej').innerText = "";
                     document.getElementById('warmup-clock').innerText = "OK";
                     warmupRunning = false;
+                    desactivarTimerGlobal();
                     warmupEmomPausado = false;
                     if (pausaBtnEW) pausaBtnEW.style.display = 'none';
+                    if (reiniciarBtnEW) reiniciarBtnEW.style.display = 'none';
                     liberarWakeLock();
                     return;
                 }
@@ -2528,6 +3011,7 @@
         // ─── RENDER PRINCIPAL ───
         function render(data) {
             renderWarmup(data);
+            inicializarProgreso(data);
             document.getElementById('sec-emom-ui').style.display = "none";
             document.getElementById('sec-timer-ui').style.display = "none";
             const pLista = document.getElementById('principal-lista');
@@ -2613,6 +3097,7 @@
             circVueltasRestantes--;
             const el = document.getElementById(contId);
             if (el) el.innerText = circVueltasRestantes > 0 ? 'Vueltas restantes: ' + circVueltasRestantes : 'CIRCUITO COMPLETO!';
+            incrementarProgreso(1);
             // >>> COACH: Pausa circuito vueltas con motivación y vueltas restantes
             coachPausaVueltas(circVueltasRestantes);
             if (circVueltasRestantes <= 0) {
@@ -2692,12 +3177,16 @@
             }
 
             const config = data.config || {
-                trabajo: 20,
-                pausa: 10,
-                rondas: 1,
-                cantidad: 8,
-                pausa_entre_rondas: 0
+                trabajo: data.trabajo || 20,
+                pausa: data.pausa || 10,
+                rondas: data.rondas || 1,
+                cantidad: data.cantidad || 8,
+                pausa_entre_rondas: data.pausa_entre_rondas || 0
             };
+            // Guardar config en dataGlobal para que el timer lo use
+            if (dataGlobal && !dataGlobal.config) {
+                dataGlobal.config = config;
+            }
             const pr = config.pausa_entre_rondas || 0;
 
             pLista.innerHTML += '<div class="info-block" style="border-color:var(--naranja);">' +
@@ -2885,11 +3374,16 @@
                 if (bloque.descripcion) {
                     html += '<div class="bloque-descripcion">' + bloque.descripcion + '</div>';
                 }
-                (bloque.rutina || []).forEach(function(b) {
-                    html += '<div class="circ-bloque-header"><span class="circ-bloque-label">Bloque #' + b.id + '</span></div>';
-                    b.ejercicios.forEach(function(ej) {
+                // Compatibilidad: bloque.rutina (sub-bloques) o bloque.ejercicios (lista plana)
+                var circEjs = bloque.rutina || [];
+                if (circEjs.length === 0 && bloque.ejercicios) {
+                    circEjs = [{id: 1, ejercicios: bloque.ejercicios}];
+                }
+                circEjs.forEach(function(b) {
+                    html += '<div class="circ-bloque-header"><span class="circ-bloque-label">Bloque #' + (b.id || 1) + '</span></div>';
+                    (b.ejercicios || []).forEach(function(ej) {
                         var ejU = (ej.unit || "Reps").toUpperCase();
-                        html += crearCard(ej.nombre, ej.link, ej.reps + " " + ejU);
+                        html += crearCard(ej.nombre, ej.link, (ej.reps || "") + " " + ejU);
                     });
                 });
                 html += '<button id="' + uid + '-btn-vuelta" class="btn-rest" style="margin-top:12px;" ' +
@@ -2899,8 +3393,13 @@
             } else if (tipo === "Circuito por Tiempo") {
                 let html = '<div class="bloque-mix" style="border-color:' + color + ';">' +
                     '<div class="bloque-mix-titulo" style="color:' + color + ';">BLOQUE ' + idx + ' — CIRCUITO POR TIEMPO</div>';
-                (bloque.rutina || []).forEach(function(b, bIdx) {
-                    const tiempo = b.tiempo_min || 5;
+                // Compatibilidad: bloque.rutina (sub-bloques) o bloque.ejercicios (lista plana)
+                var ctEjs = bloque.rutina || [];
+                if (ctEjs.length === 0 && bloque.ejercicios) {
+                    ctEjs = [{id: 1, ejercicios: bloque.ejercicios, tiempo_min: bloque.duracion_min || 5}];
+                }
+                ctEjs.forEach(function(b, bIdx) {
+                    const tiempo = b.tiempo_min || bloque.duracion_min || 5;
                     const tId = uid + "-ct-" + bIdx;
                     const bId = uid + "-ct-btn-" + bIdx;
                     html += '<div style="background:var(--fondo); border-radius:12px; padding:12px; margin-bottom:10px;">' +
@@ -2927,10 +3426,10 @@
                     trabajo: bloque.trabajo || 20,
                     pausa: bloque.pausa || 10,
                     rondas: bloque.rondas || 1,
-                    cantidad: bloque.cantidad || 8,
+                    cantidad: bloque.cantidad || (bloque.ejercicios || bloque.rutina || []).length || 8,
                     pausa_entre_rondas: bloque.pausa_entre_rondas || 0
                 };
-                const rutinaTab = bloque.rutina || [];
+                const rutinaTab = bloque.rutina || bloque.ejercicios || [];
                 let htmlTab = '<div class="bloque-mix" style="border-color:var(--naranja);">' +
                     '<div class="bloque-mix-titulo" style="color:var(--naranja);">BLOQUE ' + idx + ' — TABATA</div>' +
                     '<div class="info-block" style="border-color:var(--naranja);">' +
@@ -2983,7 +3482,7 @@
                     });
                 } else {
                     var unitsDict = bloque.units_por_ejercicio || {};
-                    (bloque.rutina || []).forEach(function(ej) {
+                    (bloque.rutina || bloque.ejercicios || []).forEach(function(ej) {
                         const n = Array.isArray(ej) ? ej[0] : (ej.nombre || ej);
                         const l = Array.isArray(ej) ? ej[1] : (ej.link || "");
                         const reps = repsDict[n] || "";
@@ -3006,7 +3505,7 @@
 
             } else if (tipo === "Series") {
                 const serialOffset = idx * 100;
-                renderSeriesMixInline(pLista, bloque.rutina || [], serialOffset, bloque.descripcion || "");
+                renderSeriesMixInline(pLista, bloque.rutina || bloque.ejercicios || [], serialOffset, bloque.descripcion || "");
             }
         }
 
@@ -3114,11 +3613,15 @@
         // ─── MARCAR SERIE (con WakeLock) ───
         function marcarSerie(i, pausa) {
             if (seriesRestantes[i] <= 0) return;
-            seriesRestantes[i]--;
             const btn = document.getElementById('btn-' + i);
+            // Bloquear si ya está descansando
+            if (btn && btn.disabled) return;
+            seriesRestantes[i]--;
             const timer = document.getElementById('timer-' + i);
             const val = document.getElementById('s-val-' + i);
             if (val) val.innerText = seriesRestantes[i];
+            // Actualizar progreso
+            incrementarProgreso(1);
             if (seriesRestantes[i] <= 0) {
                 btn.innerText = "Completado";
                 btn.disabled = true;
@@ -3126,6 +3629,7 @@
             }
             btn.classList.add('active');
             btn.innerText = "Descansando...";
+            btn.disabled = true; // Bloquear botón durante descanso
             timer.style.display = "block";
             solicitarWakeLock();
 
@@ -3149,6 +3653,7 @@
                     }
                     timer.style.display = "none";
                     btn.classList.remove('active');
+                    btn.disabled = false; // Re-habilitar botón
                     btn.innerText = "Marcar Serie (" + seriesRestantes[i] + " rest.)";
                     liberarWakeLock();
                 }
@@ -3200,6 +3705,7 @@
             const btnEl = document.getElementById(btnId);
             if (!timerEl || !btnEl) return;
             if (btnEl.dataset.running === "1") return;
+            if (!_timerGlobalActivo) activarTimerGlobal();
             btnEl.dataset.running = "1";
             btnEl.disabled = true;
             btnEl.innerText = "En curso...";
@@ -3256,10 +3762,16 @@
                     btnEl.innerText = "Reiniciar";
                     btnEl.dataset.running = "0";
                     bloqueTiempoPausado[timerId] = false;
+                    desactivarTimerGlobal();
                     if (pausaBtnAssoc && timerId === 'warmup-clock') pausaBtnAssoc.style.display = 'none';
                     if (pausaBtnBloque) pausaBtnBloque.style.display = 'none';
+                    if (timerId === 'warmup-clock') {
+                        var _ctReinEnd = document.getElementById('warmup-ct-reiniciar');
+                        if (_ctReinEnd) _ctReinEnd.style.display = 'none';
+                    }
                     // >>> COACH: Bloque completado
                     coachFinalizacion();
+                    incrementarProgreso(1);
                     liberarWakeLock();
                 }
             }, 1000);
@@ -3285,6 +3797,8 @@
             const btnEl = document.getElementById(btnId);
             if (!timerEl || !btnEl) return;
             if (btnEl.dataset.running === "1") return;
+            if (hayTimerActivo()) return;
+            activarTimerGlobal();
             btnEl.dataset.running = "1";
             btnEl.disabled = true;
             btnEl.innerText = "Preparate...";
@@ -3303,7 +3817,9 @@
 
         function iniciarCronometroTiempo() {
             if (timerActivo) return;
+            if (hayTimerActivo()) return;
             timerActivo = true;
+            activarTimerGlobal();
             timerPausado = false;
             solicitarWakeLock();
             _iniciarAudioKeepalive();
@@ -3328,6 +3844,8 @@
                 btnPausa.style.display = "block";
                 btnPausa.innerText = "⏸ PAUSAR";
             }
+            var btnReiniciar = document.getElementById('btnReiniciarTimer');
+            if (btnReiniciar) btnReiniciar.style.display = 'block';
             if (dataGlobal && dataGlobal.tipo === 'Circuito por Tiempo') hablarCoach('Arranca el circuito, vamos con todo!');
 
             tSegs = 5;
@@ -3447,9 +3965,17 @@
                                 document.getElementById('clock').innerText = "00";
                                 document.getElementById('clock').className = "";
                                 timerActivo = false;
+                                desactivarTimerGlobal();
+                                var _btnPausaEnd = document.getElementById('btnPausaTimer');
+                                if (_btnPausaEnd) _btnPausaEnd.style.display = 'none';
+                                var _btnReinEnd = document.getElementById('btnReiniciarTimer');
+                                if (_btnReinEnd) _btnReinEnd.style.display = 'none';
+                                var _btnStartEnd = document.getElementById('btnStartTimer');
+                                if (_btnStartEnd) { _btnStartEnd.style.display = 'block'; _btnStartEnd.innerText = 'EMPEZAR'; }
                                 liberarWakeLock();
                                 _detenerAudioKeepalive();
                                 coachFinalizacion();
+                                incrementarProgreso(1);
                             }
                         } else {
                             _setFase("trabajo", trabajo);
@@ -3499,6 +4025,33 @@
             }
         }
 
+        function reiniciarTimer() {
+            bgClearInterval(tInterval);
+            bgClearInterval(pausaRondaInterval);
+            timerActivo = false;
+            timerPausado = false;
+            desactivarTimerGlobal();
+            tSegs = 5;
+            tFase = "prep";
+            tIdx = 0;
+            tRonda = 1;
+            document.getElementById('t-status').innerText = "LISTO";
+            document.getElementById('clock').innerText = "05";
+            document.getElementById('clock').className = '';
+            document.getElementById('t-ejercicio').innerText = "Preparate";
+            document.getElementById('t-ejercicio-nombre').innerText = "";
+            document.getElementById('t-ej-restantes').innerText = "";
+            var fillEl = document.getElementById('timer-progress-fill');
+            if (fillEl) fillEl.style.width = '100%';
+            document.getElementById('overlay-pausa-ronda').classList.remove('visible');
+            document.getElementById('overlay-pausa-ronda').style.display = 'none';
+            document.getElementById('btnStartTimer').style.display = "block";
+            document.getElementById('btnPausaTimer').style.display = "none";
+            document.getElementById('btnPausaTimer').innerText = "⏸ PAUSAR";
+            document.getElementById('btnReiniciarTimer').style.display = "none";
+            liberarWakeLock();
+        }
+
         // ─── PAUSA ENTRE RONDAS (overlay) ───
         function mostrarPausaRonda(segundos, rondaActual, totalRondas, callback) {
             bgClearInterval(tInterval);
@@ -3545,6 +4098,7 @@
             emomInterval = null;
             emomRunning = false;
             emomPausado = false;
+            desactivarTimerGlobal();
             document.getElementById('emom-clock').className = '';
             document.getElementById('sec-emom-ui').style.display = 'none';
             var secLista = document.getElementById('sec-rutina-lista');
@@ -3602,7 +4156,9 @@
 
         function iniciarEmom() {
             if (emomRunning) return;
+            if (hayTimerActivo()) return;
             emomRunning = true;
+            activarTimerGlobal();
             emomPausado = false;
             solicitarWakeLock();
             _iniciarAudioKeepalive();
@@ -3698,9 +4254,11 @@
                                 document.getElementById('btnStartEmom').style.display = "block";
                             }
                             emomRunning = false;
+                            desactivarTimerGlobal();
                             liberarWakeLock();
                             _detenerAudioKeepalive();
                             coachFinalizacion();
+                            incrementarProgreso(1);
                             return;
                         }
                         emomSegs = 60;
@@ -3773,6 +4331,7 @@
             emomInterval = null;
             emomRunning = false;
             emomPausado = false;
+            desactivarTimerGlobal();
             emomMinActual = 0;
             emomSegs = 5;
             emomFase = "prep";
@@ -3797,6 +4356,8 @@
         function iniciarTabataBloque(btnId, statusId, ejId, infoId, timerId, tc, rutina) {
             const btn = document.getElementById(btnId);
             if (!btn || tabataRunningFlags[btnId]) return;
+            if (hayTimerActivo()) return;
+            activarTimerGlobal();
             tabataRunningFlags[btnId] = true;
             const pausaId = btnId.replace('-btn', '-pausa');
             const pausaBtn = document.getElementById(pausaId);
@@ -3841,6 +4402,8 @@
                         btn.disabled = false;
                         btn.innerText = "Reiniciar";
                         tabataRunningFlags[btnId] = false;
+                        desactivarTimerGlobal();
+                        incrementarProgreso(1);
                         liberarWakeLock();
                         return;
                     }
@@ -3945,6 +4508,8 @@
         function iniciarEmomBloque(btnId, statusId, roundId, clockId, totalMin) {
             const btn = document.getElementById(btnId);
             if (btn.dataset.running === "1") return;
+            if (hayTimerActivo()) return;
+            activarTimerGlobal();
             btn.dataset.running = "1";
             btn.disabled = true;
             btn.innerText = "En curso...";
@@ -3980,6 +4545,8 @@
                     btn.disabled = false;
                     btn.innerText = "Reiniciar";
                     emomBloquePausado[clockId] = false;
+                    desactivarTimerGlobal();
+                    incrementarProgreso(1);
                     if (pausaBtnEl) pausaBtnEl.style.display = 'none';
                     liberarWakeLock();
                     return;
@@ -4020,7 +4587,7 @@
                 cantidad: bloque.cantidad || 8,
                 pausa_entre_rondas: bloque.pausa_entre_rondas || 0
             };
-            var rutina = bloque.rutina || [];
+            var rutina = bloque.rutina || bloque.ejercicios || [];
             var uid = 'blq-' + (i + 1);
             activarTabataMixEnUI(tc, rutina, uid);
         }
@@ -4042,6 +4609,8 @@
         function iniciarEmomBloqueConCiclo(btnId, statusId, roundId, clockId, ejId, totalMin, ciclo) {
             const btn = document.getElementById(btnId);
             if (btn.dataset.running === "1") return;
+            if (hayTimerActivo()) return;
+            activarTimerGlobal();
             btn.dataset.running = "1";
             btn.disabled = true;
             btn.innerText = "En curso...";
@@ -4094,6 +4663,8 @@
                     btn.disabled = false;
                     btn.innerText = "Reiniciar";
                     emomBloquePausado[clockId] = false;
+                    desactivarTimerGlobal();
+                    incrementarProgreso(1);
                     if (pausaBtnEl) pausaBtnEl.style.display = 'none';
                     liberarWakeLock();
                     return;
@@ -4147,6 +4718,26 @@
             if (!bloque) return;
             var totalMin = bloque.minutos_totales || 10;
             var ciclo = bloque.minutos_ciclo || [];
+            // Si no hay ciclo pero hay ejercicios, construir ciclo para anunciar nombres
+            if (ciclo.length === 0) {
+                var ejsBloque = bloque.rutina || bloque.ejercicios || [];
+                if (ejsBloque.length > 0) {
+                    var ejsPorMin = bloque.ejercicios_por_minuto || 1;
+                    for (var m = 0; m < totalMin; m++) {
+                        var ejsMin = [];
+                        for (var j = 0; j < ejsPorMin; j++) {
+                            var ejIdx = (m * ejsPorMin + j) % ejsBloque.length;
+                            var ej = ejsBloque[ejIdx];
+                            var nombre = Array.isArray(ej) ? ej[0] : (ej.nombre || '');
+                            var link = Array.isArray(ej) ? ej[1] : (ej.link || '');
+                            var reps = Array.isArray(ej) ? '' : (ej.reps || '');
+                            var unit = Array.isArray(ej) ? 'Reps' : (ej.unit || 'Reps');
+                            ejsMin.push({ nombre: nombre, link: link, reps: reps, unit: unit });
+                        }
+                        ciclo.push({ ejercicios: ejsMin, es_descanso: false });
+                    }
+                }
+            }
             iniciarEmomBloqueConCiclo(btnId, statusId, roundId, clockId, ejId || null, totalMin, ciclo);
         }
 
@@ -4161,6 +4752,7 @@
             timerPausado = false;
             emomRunning = false;
             warmupRunning = false;
+            desactivarTimerGlobal();
             document.getElementById('overlay-pausa-ronda').classList.remove('visible');
             document.getElementById('overlay-pausa-ronda').style.display = 'none';
             document.getElementById('sec-timer-ui').style.display = 'none';
@@ -4174,6 +4766,8 @@
                 btnPausa.style.display = 'none';
                 btnPausa.innerText = '⏸ PAUSAR';
             }
+            var btnReiniciarT = document.getElementById('btnReiniciarTimer');
+            if (btnReiniciarT) btnReiniciarT.style.display = 'none';
             var secLista = document.getElementById('sec-rutina-lista');
             if (secLista) {
                 secLista.style.display = 'block';
@@ -4218,6 +4812,7 @@
             warmupRunning = false;
             timerPausado = false;
             timerActivo = false;
+            desactivarTimerGlobal();
             restIntervals = {};
             bloqueTiempoIntervals = {};
             seriesRestantes = {};
